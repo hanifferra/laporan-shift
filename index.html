@@ -1,613 +1,1213 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Laporan Kerja Harian</title>
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<style>
-  :root {
-    --bg:#f4f6fb; --surface:#ffffff; --card:#ffffff; --border:#e2e6f0;
-    --accent:#4f6ef7; --accent2:#7c3aed; --green:#10b981;
-    --text:#1a1f3c; --muted:#7a82a6; --label:#3d4468;
-    --shadow:0 2px 12px rgba(79,110,247,.07); --radius:16px; --radius-sm:10px;
-  }
-  @media (prefers-color-scheme:dark){
-    :root{--bg:#0d0f1a;--surface:#161927;--card:#1e2235;--border:#2a2f48;--text:#f0f2ff;--muted:#8892b8;--label:#c5cce8;--shadow:0 2px 16px rgba(0,0,0,.3);}
-  }
-  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-  html,body{width:100%;max-width:100%;overflow-x:hidden;-webkit-text-size-adjust:100%}
-  body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding-bottom:48px}
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Laporan Kerja Harian</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f4f6fb;
+      --surface: #ffffff;
+      --card: #ffffff;
+      --border: #e2e6f0;
+      --accent: #4f6ef7;
+      --accent2: #7c3aed;
+      --green: #10b981;
+      --text: #1a1f3c;
+      --muted: #7a82a6;
+      --label: #3d4468;
+      --shadow: 0 2px 12px rgba(79, 110, 247, .07);
+      --radius: 16px;
+      --radius-sm: 10px;
+    }
 
-  .header{background:linear-gradient(135deg,var(--surface) 0%,var(--bg) 100%);padding:28px 20px 24px;border-bottom:1px solid var(--border);position:relative;overflow:hidden}
-  .header::before{content:'';position:absolute;top:-60px;right:-60px;width:180px;height:180px;background:radial-gradient(circle,rgba(79,110,247,.18) 0%,transparent 70%);border-radius:50%;pointer-events:none}
-  .tag{display:inline-flex;align-items:center;gap:6px;background:rgba(79,110,247,.15);border:1px solid rgba(79,110,247,.3);color:#7da3ff;font-size:11px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;padding:5px 12px;border-radius:100px;margin-bottom:14px}
-  .tag::before{content:'●';font-size:7px;color:var(--accent)}
-  h1{font-size:26px;font-weight:800;line-height:1.2;background:linear-gradient(135deg,var(--text) 20%,var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-  .subtitle{font-size:13px;color:var(--muted);margin-top:6px}
+    @media (prefers-color-scheme:dark) {
+      :root {
+        --bg: #0d0f1a;
+        --surface: #161927;
+        --card: #1e2235;
+        --border: #2a2f48;
+        --text: #f0f2ff;
+        --muted: #8892b8;
+        --label: #c5cce8;
+        --shadow: 0 2px 16px rgba(0, 0, 0, .3);
+      }
+    }
 
-  .progress-wrap{background:var(--surface);padding:14px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px}
-  .progress-bar-bg{flex:1;height:6px;background:var(--border);border-radius:100px;overflow:hidden}
-  .progress-bar-fill{height:100%;width:0%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:100px;transition:width .4s ease}
-  .progress-pct{font-size:12px;font-weight:700;color:var(--accent);min-width:30px;text-align:right}
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0
+    }
 
-  .content{padding:20px 16px;display:flex;flex-direction:column;gap:16px}
-  .section-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);animation:fadeUp .4s ease both}
-  .section-card:nth-child(2){animation-delay:.07s}
-  .section-card:nth-child(3){animation-delay:.14s}
-  .section-card:nth-child(4){animation-delay:.21s}
-  @keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
-  .section-header{display:flex;align-items:center;gap:10px;padding:16px 18px 14px;border-bottom:1px solid var(--border);background:rgba(79,110,247,.03)}
-  .section-num{width:28px;height:28px;background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#fff;flex-shrink:0}
-  .section-title{font-size:13px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted)}
+    html,
+    body {
+      width: 100%;
+      max-width: 100%;
+      overflow-x: hidden;
+      -webkit-text-size-adjust: 100%
+    }
 
-  .field-group{padding:16px 18px;display:flex;flex-direction:column;gap:18px}
-  .field-label{font-size:13px;font-weight:600;color:var(--label);margin-bottom:8px;display:flex;align-items:center;gap:4px}
-  .required{color:var(--accent);font-size:14px;line-height:1}
-  .row-2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-  @media(max-width:400px){.row-2{grid-template-columns:1fr}}
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding-bottom: 48px
+    }
 
-  input[type="text"],input[type="date"],input[type="time"],textarea{
-    width:100%;background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius-sm);
-    color:var(--text);font-family:inherit;font-size:14px;padding:12px 14px;outline:none;
-    transition:border-color .2s,box-shadow .2s;-webkit-appearance:none;appearance:none;resize:none;display:block
-  }
-  input[type="date"],input[type="time"]{min-height:48px;cursor:pointer}
-  input:focus,textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(79,110,247,.12)}
-  input::placeholder,textarea::placeholder{color:var(--muted);opacity:.6}
-  .char-count{text-align:right;font-size:11px;color:var(--muted);margin-top:5px}
+    .header {
+      background: linear-gradient(135deg, var(--surface) 0%, var(--bg) 100%);
+      padding: 28px 20px 24px;
+      border-bottom: 1px solid var(--border);
+      position: relative;
+      overflow: hidden
+    }
 
-  .shift-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
-  .shift-btn{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:14px 8px;text-align:center;cursor:pointer;transition:all .2s;-webkit-tap-highlight-color:transparent;width:100%;font-family:inherit}
-  .shift-btn:active{transform:scale(.96)}
-  .shift-btn.active{border-color:var(--accent);background:rgba(79,110,247,.12);box-shadow:0 0 0 3px rgba(79,110,247,.1)}
-  .shift-icon{font-size:24px;display:block;margin-bottom:6px}
-  .shift-name{font-size:13px;font-weight:700;color:var(--text);display:block}
-  .shift-time{font-size:10px;color:var(--muted);margin-top:2px;font-weight:500;display:block}
+    .header::before {
+      content: '';
+      position: absolute;
+      top: -60px;
+      right: -60px;
+      width: 180px;
+      height: 180px;
+      background: radial-gradient(circle, rgba(79, 110, 247, .18) 0%, transparent 70%);
+      border-radius: 50%;
+      pointer-events: none
+    }
 
-  .gangguan-list{display:flex;flex-direction:column;gap:8px}
-  .gangguan-btn{display:flex;align-items:center;gap:12px;background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:13px 14px;cursor:pointer;transition:all .2s;-webkit-tap-highlight-color:transparent;width:100%;text-align:left;font-family:inherit}
-  .gangguan-btn.checked{border-color:var(--accent);background:rgba(79,110,247,.08)}
-  .custom-check{width:20px;height:20px;border:2px solid var(--border);border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .2s}
-  .gangguan-btn.checked .custom-check{background:var(--accent);border-color:var(--accent)}
-  .check-icon{display:none;font-size:11px;color:#fff;font-weight:800}
-  .gangguan-btn.checked .check-icon{display:block}
-  .gangguan-text{font-size:14px;font-weight:500;color:var(--label)}
-  .gangguan-btn.checked .gangguan-text{color:var(--text);font-weight:600}
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(79, 110, 247, .15);
+      border: 1px solid rgba(79, 110, 247, .3);
+      color: #7da3ff;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      padding: 5px 12px;
+      border-radius: 100px;
+      margin-bottom: 14px
+    }
 
-  .info-box{display:flex;align-items:flex-start;gap:8px;font-size:12px;color:var(--muted);background:rgba(79,110,247,.07);border:1px solid rgba(79,110,247,.18);border-radius:9px;padding:10px 12px;margin-bottom:6px;line-height:1.4}
-  .info-box::before{content:'ℹ️';font-size:13px;flex-shrink:0;margin-top:1px}
+    .tag::before {
+      content: '●';
+      font-size: 7px;
+      color: var(--accent)
+    }
 
-  /* Foto upload */
-  .foto-upload-area{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;background:var(--surface);border:2px dashed var(--border);border-radius:var(--radius-sm);padding:24px 16px;cursor:pointer;transition:border-color .2s,background .2s;margin-bottom:12px;width:100%;font-family:inherit;-webkit-tap-highlight-color:transparent}
-  .foto-upload-area:hover,.foto-upload-area:focus{border-color:var(--accent);background:rgba(79,110,247,.04)}
-  .foto-upload-icon{font-size:28px}
-  .foto-upload-text{font-size:14px;font-weight:600;color:var(--label)}
-  .foto-upload-sub{font-size:11px;color:var(--muted)}
-  .foto-preview-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
-  .foto-thumb{position:relative;aspect-ratio:1;border-radius:10px;overflow:hidden;border:1.5px solid var(--border)}
-  .foto-thumb img{width:100%;height:100%;object-fit:cover;display:block}
-  .foto-remove{position:absolute;top:4px;right:4px;width:22px;height:22px;background:rgba(0,0,0,.65);color:#fff;border:none;border-radius:50%;font-size:11px;cursor:pointer;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent}
-  .foto-remove:hover{background:rgba(220,50,50,.85)}
-  .foto-count-badge{font-size:12px;color:var(--muted);text-align:center;margin-top:4px}
+    h1 {
+      font-size: 26px;
+      font-weight: 800;
+      line-height: 1.2;
+      background: linear-gradient(135deg, var(--text) 20%, var(--accent));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text
+    }
 
-  /* Status foto processing */
-  .foto-processing{font-size:12px;color:var(--accent);text-align:center;margin-top:4px;display:none}
-  .foto-processing.show{display:block}
+    .subtitle {
+      font-size: 13px;
+      color: var(--muted);
+      margin-top: 6px
+    }
 
-  .btn-submit{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:16px;background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;border-radius:var(--radius);color:#fff;font-family:inherit;font-size:15px;font-weight:700;cursor:pointer;transition:all .2s;box-shadow:0 4px 20px rgba(79,110,247,.35);margin-top:4px;-webkit-tap-highlight-color:transparent}
-  .btn-submit:active{transform:scale(.98)}
-  .btn-submit:disabled{opacity:.6;cursor:not-allowed}
+    .progress-wrap {
+      background: var(--surface);
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 12px
+    }
 
-  .toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(80px);font-size:14px;font-weight:600;padding:13px 26px;border-radius:100px;box-shadow:0 8px 28px rgba(0,0,0,.28);transition:transform .32s ease;z-index:999;white-space:nowrap;pointer-events:none}
-  .toast.success{background:var(--green);color:#fff}
-  .toast.error{background:#ef4444;color:#fff}
-  .toast.show{transform:translateX(-50%) translateY(0)}
-  .spin{display:inline-block;animation:spin .8s linear infinite}
-  @keyframes spin{to{transform:rotate(360deg)}}
+    .progress-bar-bg {
+      flex: 1;
+      height: 6px;
+      background: var(--border);
+      border-radius: 100px;
+      overflow: hidden
+    }
 
-  #lainnyaInputWrap{margin-top:6px;display:none}
-</style>
+    .progress-bar-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      border-radius: 100px;
+      transition: width .4s ease
+    }
+
+    .progress-pct {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--accent);
+      min-width: 30px;
+      text-align: right
+    }
+
+    .content {
+      padding: 20px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px
+    }
+
+    .section-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: var(--shadow);
+      animation: fadeUp .4s ease both
+    }
+
+    .section-card:nth-child(2) {
+      animation-delay: .07s
+    }
+
+    .section-card:nth-child(3) {
+      animation-delay: .14s
+    }
+
+    .section-card:nth-child(4) {
+      animation-delay: .21s
+    }
+
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(16px)
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0)
+      }
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 16px 18px 14px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(79, 110, 247, .03)
+    }
+
+    .section-num {
+      width: 28px;
+      height: 28px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 800;
+      color: #fff;
+      flex-shrink: 0
+    }
+
+    .section-title {
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--muted)
+    }
+
+    .field-group {
+      padding: 16px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px
+    }
+
+    .field-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--label);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 4px
+    }
+
+    .required {
+      color: var(--accent);
+      font-size: 14px;
+      line-height: 1
+    }
+
+    .row-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px
+    }
+
+    @media(max-width:400px) {
+      .row-2 {
+        grid-template-columns: 1fr
+      }
+    }
+
+    input[type="text"],
+    input[type="date"],
+    input[type="time"],
+    textarea {
+      width: 100%;
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text);
+      font-family: inherit;
+      font-size: 14px;
+      padding: 12px 14px;
+      outline: none;
+      transition: border-color .2s, box-shadow .2s;
+      -webkit-appearance: none;
+      appearance: none;
+      resize: none;
+      display: block
+    }
+
+    input[type="date"],
+    input[type="time"] {
+      min-height: 48px;
+      cursor: pointer
+    }
+
+    input:focus,
+    textarea:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(79, 110, 247, .12)
+    }
+
+    input::placeholder,
+    textarea::placeholder {
+      color: var(--muted);
+      opacity: .6
+    }
+
+    .char-count {
+      text-align: right;
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 5px
+    }
+
+    .shift-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px
+    }
+
+    .shift-btn {
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 14px 8px;
+      text-align: center;
+      cursor: pointer;
+      transition: all .2s;
+      -webkit-tap-highlight-color: transparent;
+      width: 100%;
+      font-family: inherit
+    }
+
+    .shift-btn:active {
+      transform: scale(.96)
+    }
+
+    .shift-btn.active {
+      border-color: var(--accent);
+      background: rgba(79, 110, 247, .12);
+      box-shadow: 0 0 0 3px rgba(79, 110, 247, .1)
+    }
+
+    .shift-icon {
+      font-size: 24px;
+      display: block;
+      margin-bottom: 6px
+    }
+
+    .shift-name {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text);
+      display: block
+    }
+
+    .shift-time {
+      font-size: 10px;
+      color: var(--muted);
+      margin-top: 2px;
+      font-weight: 500;
+      display: block
+    }
+
+    .gangguan-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px
+    }
+
+    .gangguan-btn {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 13px 14px;
+      cursor: pointer;
+      transition: all .2s;
+      -webkit-tap-highlight-color: transparent;
+      width: 100%;
+      text-align: left;
+      font-family: inherit
+    }
+
+    .gangguan-btn.checked {
+      border-color: var(--accent);
+      background: rgba(79, 110, 247, .08)
+    }
+
+    .custom-check {
+      width: 20px;
+      height: 20px;
+      border: 2px solid var(--border);
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: all .2s
+    }
+
+    .gangguan-btn.checked .custom-check {
+      background: var(--accent);
+      border-color: var(--accent)
+    }
+
+    .check-icon {
+      display: none;
+      font-size: 11px;
+      color: #fff;
+      font-weight: 800
+    }
+
+    .gangguan-btn.checked .check-icon {
+      display: block
+    }
+
+    .gangguan-text {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--label)
+    }
+
+    .gangguan-btn.checked .gangguan-text {
+      color: var(--text);
+      font-weight: 600
+    }
+
+    .info-box {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      font-size: 12px;
+      color: var(--muted);
+      background: rgba(79, 110, 247, .07);
+      border: 1px solid rgba(79, 110, 247, .18);
+      border-radius: 9px;
+      padding: 10px 12px;
+      margin-bottom: 6px;
+      line-height: 1.4
+    }
+
+    .info-box::before {
+      content: 'ℹ️';
+      font-size: 13px;
+      flex-shrink: 0;
+      margin-top: 1px
+    }
+
+    /* Foto upload */
+    .foto-upload-area {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      background: var(--surface);
+      border: 2px dashed var(--border);
+      border-radius: var(--radius-sm);
+      padding: 24px 16px;
+      cursor: pointer;
+      transition: border-color .2s, background .2s;
+      margin-bottom: 12px;
+      width: 100%;
+      font-family: inherit;
+      -webkit-tap-highlight-color: transparent
+    }
+
+    .foto-upload-area:hover,
+    .foto-upload-area:focus {
+      border-color: var(--accent);
+      background: rgba(79, 110, 247, .04)
+    }
+
+    .foto-upload-icon {
+      font-size: 28px
+    }
+
+    .foto-upload-text {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--label)
+    }
+
+    .foto-upload-sub {
+      font-size: 11px;
+      color: var(--muted)
+    }
+
+    .foto-preview-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px
+    }
+
+    .foto-thumb {
+      position: relative;
+      aspect-ratio: 1;
+      border-radius: 10px;
+      overflow: hidden;
+      border: 1.5px solid var(--border)
+    }
+
+    .foto-thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block
+    }
+
+    .foto-remove {
+      position: absolute;
+      top: 4px;
+      right: 4px;
+      width: 22px;
+      height: 22px;
+      background: rgba(0, 0, 0, .65);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      font-size: 11px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      -webkit-tap-highlight-color: transparent
+    }
+
+    .foto-remove:hover {
+      background: rgba(220, 50, 50, .85)
+    }
+
+    .foto-count-badge {
+      font-size: 12px;
+      color: var(--muted);
+      text-align: center;
+      margin-top: 4px
+    }
+
+    /* Status foto processing */
+    .foto-processing {
+      font-size: 12px;
+      color: var(--accent);
+      text-align: center;
+      margin-top: 4px;
+      display: none
+    }
+
+    .foto-processing.show {
+      display: block
+    }
+
+    .btn-submit {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      width: 100%;
+      padding: 16px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border: none;
+      border-radius: var(--radius);
+      color: #fff;
+      font-family: inherit;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all .2s;
+      box-shadow: 0 4px 20px rgba(79, 110, 247, .35);
+      margin-top: 4px;
+      -webkit-tap-highlight-color: transparent
+    }
+
+    .btn-submit:active {
+      transform: scale(.98)
+    }
+
+    .btn-submit:disabled {
+      opacity: .6;
+      cursor: not-allowed
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 28px;
+      left: 50%;
+      transform: translateX(-50%) translateY(80px);
+      font-size: 14px;
+      font-weight: 600;
+      padding: 13px 26px;
+      border-radius: 100px;
+      box-shadow: 0 8px 28px rgba(0, 0, 0, .28);
+      transition: transform .32s ease;
+      z-index: 999;
+      white-space: nowrap;
+      pointer-events: none
+    }
+
+    .toast.success {
+      background: var(--green);
+      color: #fff
+    }
+
+    .toast.error {
+      background: #ef4444;
+      color: #fff
+    }
+
+    .toast.show {
+      transform: translateX(-50%) translateY(0)
+    }
+
+    .spin {
+      display: inline-block;
+      animation: spin .8s linear infinite
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg)
+      }
+    }
+
+    #lainnyaInputWrap {
+      margin-top: 6px;
+      display: none
+    }
+  </style>
 </head>
+
 <body>
 
-<div class="header">
-  <div class="tag">Sistem Pelaporan Tim</div>
-  <h1>Laporan Kerja Harian</h1>
-  <p class="subtitle">Isi laporan setelah selesai shift ya 👋</p>
-</div>
+  <div class="header">
+    <div class="tag">Sistem Pelaporan Tim</div>
+    <h1>Laporan Kerja Harian</h1>
+    <p class="subtitle">Isi laporan setelah selesai shift ya 👋</p>
+  </div>
 
-<div class="progress-wrap">
-  <div class="progress-bar-bg"><div class="progress-bar-fill" id="progressFill"></div></div>
-  <div class="progress-pct" id="progressPct">0%</div>
-</div>
-
-<div class="content">
-
-  <!-- SEKSI 1: IDENTITAS -->
-  <div class="section-card">
-    <div class="section-header">
-      <div class="section-num">01</div>
-      <div class="section-title">Identitas</div>
+  <div class="progress-wrap">
+    <div class="progress-bar-bg">
+      <div class="progress-bar-fill" id="progressFill"></div>
     </div>
-    <div class="field-group">
-      <div>
-        <div class="field-label">Nama Anggota <span class="required">*</span></div>
-        <input type="text" id="nama" placeholder="Masukkan nama lengkap" autocomplete="name" />
+    <div class="progress-pct" id="progressPct">0%</div>
+  </div>
+
+  <div class="content">
+
+    <!-- INFO BOX: Rencana Kerja Mingguan — ubah isinya tiap minggu -->
+    <div class="section-card">
+      <div class="section-header">
+        <div class="section-num" style="background:linear-gradient(135deg,#0f4c81,#1a73e8)">📋</div>
+        <div class="section-title">Rencana Kerja Minggu Ini</div>
       </div>
-      <div>
-        <div class="field-label">Tanggal Laporan <span class="required">*</span></div>
-        <input type="date" id="tanggalLaporan" />
-      </div>
-      <div>
-        <div class="field-label">Pilih Shift <span class="required">*</span></div>
-        <div class="shift-grid">
-          <button type="button" class="shift-btn" data-shift="Shift 1">
-            <span class="shift-icon">🌙</span>
-            <span class="shift-name">Shift 1</span>
-            <span class="shift-time">00:00–08:00</span>
-          </button>
-          <button type="button" class="shift-btn" data-shift="Shift 2">
-            <span class="shift-icon">☀️</span>
-            <span class="shift-name">Shift 2</span>
-            <span class="shift-time">08:00–16:00</span>
-          </button>
-          <button type="button" class="shift-btn" data-shift="Shift 3">
-            <span class="shift-icon">🌆</span>
-            <span class="shift-name">Shift 3</span>
-            <span class="shift-time">16:00–00:00</span>
-          </button>
+      <div class="field-group">
+        <div class="info-box" style="flex-direction:column;gap:6px">
+          <strong style="color:var(--label)">Periode 28 April s.d 04 Mei 2025</strong>
+          <ol style="padding-left:18px;line-height:1.8;margin-top:4px">
+            <li>Pengecekan tegangan AVR dan Instalasi PLN</li>
+            <li>Membersihkan kebun dan halaman kantor</li>
+            <li>Perawatan jalur exciter dan headend MUX</li>
+            <li>Cek grounding</li>
+            <li>Perawatan/Pemanasan genset dan membersihkan ruangan</li>
+          </ol>
         </div>
       </div>
     </div>
-  </div>
 
-  <!-- SEKSI 2: KEGIATAN -->
-  <div class="section-card">
-    <div class="section-header">
-      <div class="section-num">02</div>
-      <div class="section-title">Laporan Kegiatan</div>
-    </div>
-    <div class="field-group">
-      <div>
-        <div class="field-label">Pekerjaan Hari Ini <span class="required">*</span></div>
-        <textarea id="kegiatan" rows="4" maxlength="600" placeholder="Ceritakan pekerjaan yang dilakukan selama shift..."></textarea>
-        <div class="char-count"><span id="kegiatanCount">0</span>/600</div>
+    <div class="section-card">
+      <div class="section-header">
+        <div class="section-num">01</div>
+        <div class="section-title">Identitas</div>
       </div>
-
-      <div>
-        <div class="field-label">Jenis Gangguan <span style="font-size:11px;font-weight:400;color:var(--muted)">(opsional, bisa pilih lebih dari satu)</span></div>
-        <div class="gangguan-list">
-          <button type="button" class="gangguan-btn" data-gangguan="Layar freeze">
-            <div class="custom-check"><span class="check-icon">✓</span></div>
-            <span class="gangguan-text">Layar freeze</span>
-          </button>
-          <button type="button" class="gangguan-btn" data-gangguan="Gambar patah-patah / macet">
-            <div class="custom-check"><span class="check-icon">✓</span></div>
-            <span class="gangguan-text">Gambar patah-patah / macet</span>
-          </button>
-          <button type="button" class="gangguan-btn" data-gangguan="No signal">
-            <div class="custom-check"><span class="check-icon">✓</span></div>
-            <span class="gangguan-text">No signal</span>
-          </button>
-          <button type="button" class="gangguan-btn" data-gangguan="Blank">
-            <div class="custom-check"><span class="check-icon">✓</span></div>
-            <span class="gangguan-text">Blank</span>
-          </button>
-          <button type="button" class="gangguan-btn" data-gangguan="Suara hilang">
-            <div class="custom-check"><span class="check-icon">✓</span></div>
-            <span class="gangguan-text">Suara hilang</span>
-          </button>
-          <button type="button" class="gangguan-btn" id="lainnyaBtn" data-gangguan="Lainnya">
-            <div class="custom-check"><span class="check-icon">✓</span></div>
-            <span class="gangguan-text">Lainnya</span>
-          </button>
-          <div id="lainnyaInputWrap">
-            <input type="text" id="lainnyaInput" placeholder="Jelaskan gangguan lainnya..." />
+      <div class="field-group">
+        <div>
+          <div class="field-label">Nama Anggota <span class="required">*</span></div>
+          <input type="text" id="nama" placeholder="Masukkan nama lengkap" autocomplete="name" />
+        </div>
+        <div>
+          <div class="field-label">Tanggal Laporan <span class="required">*</span></div>
+          <input type="date" id="tanggalLaporan" />
+        </div>
+        <div>
+          <div class="field-label">Pilih Shift <span class="required">*</span></div>
+          <div class="shift-grid">
+            <button type="button" class="shift-btn" data-shift="Shift 1">
+              <span class="shift-icon">🌙</span>
+              <span class="shift-name">Shift 1</span>
+              <span class="shift-time">00:00–08:00</span>
+            </button>
+            <button type="button" class="shift-btn" data-shift="Shift 2">
+              <span class="shift-icon">☀️</span>
+              <span class="shift-name">Shift 2</span>
+              <span class="shift-time">08:00–16:00</span>
+            </button>
+            <button type="button" class="shift-btn" data-shift="Shift 3">
+              <span class="shift-icon">🌆</span>
+              <span class="shift-name">Shift 3</span>
+              <span class="shift-time">16:00–00:00</span>
+            </button>
           </div>
         </div>
       </div>
+    </div>
 
-      <div>
-        <div class="field-label">Kendala</div>
-        <div class="info-box">Opsional — isi jika ada hambatan yang dihadapi saat shift.</div>
-        <textarea id="kendala" rows="3" maxlength="400" placeholder="Tuliskan kendala yang dihadapi (jika ada)..."></textarea>
-        <div class="char-count"><span id="kendalaCount">0</span>/400</div>
+    <!-- SEKSI 2: KEGIATAN -->
+    <div class="section-card">
+      <div class="section-header">
+        <div class="section-num">02</div>
+        <div class="section-title">Laporan Kegiatan</div>
       </div>
-
-      <div>
-        <div class="field-label">Detail Waktu Gangguan</div>
-        <div class="row-2">
-          <div>
-            <div class="field-label" style="font-size:12px;color:var(--muted)">Waktu Terjadi</div>
-            <input type="time" id="waktuGangguan" />
-          </div>
-          <div>
-            <div class="field-label" style="font-size:12px;color:var(--muted)">Durasi</div>
-            <input type="text" id="durasiGangguan" placeholder="cth: 15 menit, 1 jam" />
+      <div class="field-group">
+        <!-- Kolom 5: Pekerjaan Hari Ini -->
+        <div>
+          <div class="field-label">Pekerjaan Hari Ini <span class="required">*</span></div>
+          <div class="gangguan-list">
+            <button type="button" class="gangguan-btn" data-kegiatan="Melakukan metering parameter downlink">
+              <div class="custom-check"><span class="check-icon">✓</span></div>
+              <span class="gangguan-text">Melakukan metering parameter downlink</span>
+            </button>
+            <button type="button" class="gangguan-btn" data-kegiatan="Melakukan monitoring siaran">
+              <div class="custom-check"><span class="check-icon">✓</span></div>
+              <span class="gangguan-text">Melakukan monitoring siaran</span>
+            </button>
+            <button type="button" class="gangguan-btn" data-kegiatan="Melakukan pemanasan genset">
+              <div class="custom-check"><span class="check-icon">✓</span></div>
+              <span class="gangguan-text">Melakukan pemanasan genset</span>
+            </button>
+            <button type="button" class="gangguan-btn" data-kegiatan="Melakukan pengecekan Grounding">
+              <div class="custom-check"><span class="check-icon">✓</span></div>
+              <span class="gangguan-text">Melakukan pengecekan Grounding</span>
+            </button>
+            <button type="button" class="gangguan-btn" data-kegiatan="Melakukan pengecekan tegangan listrik AVR & PLN">
+              <div class="custom-check"><span class="check-icon">✓</span></div>
+              <span class="gangguan-text">Melakukan pengecekan tegangan listrik AVR &amp; PLN</span>
+            </button>
+            <button type="button" class="gangguan-btn"
+              data-kegiatan="Melakukan kegiatan bersih-bersih lingkungan pemancar">
+              <div class="custom-check"><span class="check-icon">✓</span></div>
+              <span class="gangguan-text">Melakukan kegiatan bersih-bersih lingkungan pemancar</span>
+            </button>
+            <button type="button" class="gangguan-btn" data-kegiatan="Melakukan pemeliharaan peralatan pemancar">
+              <div class="custom-check"><span class="check-icon">✓</span></div>
+              <span class="gangguan-text">Melakukan pemeliharaan peralatan pemancar</span>
+            </button>
+            <button type="button" class="gangguan-btn" id="kegiatanLainnyaBtn" data-kegiatan="Lainnya">
+              <div class="custom-check"><span class="check-icon">✓</span></div>
+              <span class="gangguan-text">Lainnya</span>
+            </button>
+            <div id="kegiatanLainnyaWrap" style="display:none;margin-top:6px">
+              <textarea id="kegiatanLainnya" rows="3" maxlength="300"
+                placeholder="Tuliskan pekerjaan lainnya..."></textarea>
+            </div>
           </div>
         </div>
-      </div>
 
-      <div>
-        <div class="field-label">Tindakan yang Dilakukan</div>
-        <textarea id="tindakan" rows="4" maxlength="500" placeholder="Langkah atau tindakan yang sudah diambil..."></textarea>
-        <div class="char-count"><span id="tindakanCount">0</span>/500</div>
+        <div>
+          <div class="field-label">Jenis Gangguan <span
+              style="font-size:11px;font-weight:400;color:var(--muted)">(opsional, bisa pilih lebih dari satu)</span>
+          </div>
+          <div class="gangguan-list">
+            <button type="button" class="gangguan-btn" data-gangguan="Layar freeze">
+              <div class="custom-check"><span class="check-icon">✓</span></div>
+              <span class="gangguan-text">Layar freeze</span>
+            </button>
+            <button type="button" class="gangguan-btn" data-gangguan="Gambar patah-patah / macet">
+              <div class="custom-check"><span class="check-icon">✓</span></div>
+              <span class="gangguan-text">Gambar patah-patah / macet</span>
+            </button>
+            <button type="button" class="gangguan-btn" data-gangguan="No signal">
+              <div class="custom-check"><span class="check-icon">✓</span></div>
+              <span class="gangguan-text">No signal</span>
+            </button>
+            <button type="button" class="gangguan-btn" data-gangguan="Blank">
+              <div class="custom-check"><span class="check-icon">✓</span></div>
+              <span class="gangguan-text">Blank</span>
+            </button>
+            <button type="button" class="gangguan-btn" data-gangguan="Suara hilang">
+              <div class="custom-check"><span class="check-icon">✓</span></div>
+              <span class="gangguan-text">Suara hilang</span>
+            </button>
+            <button type="button" class="gangguan-btn" id="lainnyaBtn" data-gangguan="Lainnya">
+              <div class="custom-check"><span class="check-icon">✓</span></div>
+              <span class="gangguan-text">Lainnya</span>
+            </button>
+            <div id="lainnyaInputWrap">
+              <input type="text" id="lainnyaInput" placeholder="Jelaskan gangguan lainnya..." />
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="field-label">Kendala</div>
+          <div class="info-box">Opsional — isi jika ada hambatan yang dihadapi saat shift.</div>
+          <textarea id="kendala" rows="3" maxlength="400"
+            placeholder="Tuliskan kendala yang dihadapi (jika ada)..."></textarea>
+          <div class="char-count"><span id="kendalaCount">0</span>/400</div>
+        </div>
+
+        <div>
+          <div class="field-label">Detail Waktu Gangguan</div>
+          <div class="row-2">
+            <div>
+              <div class="field-label" style="font-size:12px;color:var(--muted)">Waktu Terjadi</div>
+              <input type="time" id="waktuGangguan" />
+            </div>
+            <div>
+              <div class="field-label" style="font-size:12px;color:var(--muted)">Durasi</div>
+              <input type="text" id="durasiGangguan" placeholder="cth: 15 menit, 1 jam" />
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="field-label">Tindakan yang Dilakukan</div>
+          <textarea id="tindakan" rows="4" maxlength="500"
+            placeholder="Langkah atau tindakan yang sudah diambil..."></textarea>
+          <div class="char-count"><span id="tindakanCount">0</span>/500</div>
+        </div>
       </div>
     </div>
+
+    <!-- SEKSI 3: FOTO & CATATAN -->
+    <div class="section-card">
+      <div class="section-header">
+        <div class="section-num">03</div>
+        <div class="section-title">Foto &amp; Catatan</div>
+      </div>
+      <div class="field-group">
+        <div>
+          <div class="field-label">Foto Dokumentasi</div>
+          <div class="info-box">Opsional — foto bukti gangguan atau dokumentasi kegiatan shift. Maks 5 foto.</div>
+          <button type="button" class="foto-upload-area" id="fotoUploadArea">
+            <span class="foto-upload-icon">📷</span>
+            <span class="foto-upload-text">Tap untuk pilih foto</span>
+            <span class="foto-upload-sub">JPG / PNG — maks 5 foto</span>
+          </button>
+          <input type="file" id="fotoInput" accept="image/*" multiple style="display:none" />
+          <div class="foto-preview-grid" id="fotoPreviewGrid"></div>
+          <div class="foto-processing" id="fotoProcessing">⏳ Memproses foto...</div>
+          <div class="foto-count-badge" id="fotoCountBadge"></div>
+        </div>
+
+        <div>
+          <div class="field-label">Catatan Tambahan</div>
+          <div class="info-box">Opsional — hal lain yang ingin dicatat atau dilaporkan.</div>
+          <textarea id="catatan" rows="4" maxlength="500"
+            placeholder="Tulis catatan tambahan di sini (jika ada)..."></textarea>
+          <div class="char-count"><span id="catatanCount">0</span>/500</div>
+        </div>
+      </div>
+    </div>
+
+    <button type="button" class="btn-submit" id="btnSubmit">
+      <span>📤</span> Kirim Laporan
+    </button>
+
   </div>
 
-  <!-- SEKSI 3: FOTO & CATATAN -->
-  <div class="section-card">
-    <div class="section-header">
-      <div class="section-num">03</div>
-      <div class="section-title">Foto &amp; Catatan</div>
-    </div>
-    <div class="field-group">
-      <div>
-        <div class="field-label">Foto Dokumentasi</div>
-        <div class="info-box">Opsional — foto bukti gangguan atau dokumentasi kegiatan shift. Maks 5 foto.</div>
-        <button type="button" class="foto-upload-area" id="fotoUploadArea">
-          <span class="foto-upload-icon">📷</span>
-          <span class="foto-upload-text">Tap untuk pilih foto</span>
-          <span class="foto-upload-sub">JPG / PNG — maks 5 foto</span>
-        </button>
-        <input type="file" id="fotoInput" accept="image/*" multiple style="display:none" />
-        <div class="foto-preview-grid" id="fotoPreviewGrid"></div>
-        <div class="foto-processing" id="fotoProcessing">⏳ Memproses foto...</div>
-        <div class="foto-count-badge" id="fotoCountBadge"></div>
-      </div>
+  <div class="toast" id="toast"></div>
 
-      <div>
-        <div class="field-label">Catatan Tambahan</div>
-        <div class="info-box">Opsional — hal lain yang ingin dicatat atau dilaporkan.</div>
-        <textarea id="catatan" rows="4" maxlength="500" placeholder="Tulis catatan tambahan di sini (jika ada)..."></textarea>
-        <div class="char-count"><span id="catatanCount">0</span>/500</div>
-      </div>
-    </div>
-  </div>
+  <script>
+    (function () {
+      'use strict';
 
-  <button type="button" class="btn-submit" id="btnSubmit">
-    <span>📤</span> Kirim Laporan
-  </button>
+      // ── GANTI dengan URL Web App yang sudah di-deploy ──────────
+      var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxd-6FxYpYBq-qM4AUiVNjLVnblaAlJnzEsru1mdydGq2YT-hPDDNYl5-WLWMMnYXCg/exec';
 
-</div>
+      var selectedShift = '';
+      var fotoBase64List = [];  // base64 murni (tanpa prefix data:...)
+      var fotoMimeList = [];  // mime type tiap foto
+      var fotoPending = 0;   // jumlah foto yang masih dalam proses kompresi
+      var isSubmitting = false;
 
-<div class="toast" id="toast"></div>
+      // ── Set tanggal default = hari ini ──────────────────────────
+      (function setDefaultDate() {
+        var now = new Date();
+        var yyyy = now.getFullYear();
+        var mm = String(now.getMonth() + 1).padStart(2, '0');
+        var dd = String(now.getDate()).padStart(2, '0');
+        document.getElementById('tanggalLaporan').value = yyyy + '-' + mm + '-' + dd;
+      })();
 
-<script>
-(function () {
-  'use strict';
-
-  // ── GANTI dengan URL Web App yang sudah di-deploy ──────────
-  var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxd-6FxYpYBq-qM4AUiVNjLVnblaAlJnzEsru1mdydGq2YT-hPDDNYl5-WLWMMnYXCg/exec';
-
-  var selectedShift  = '';
-  var fotoBase64List = [];  // base64 murni (tanpa prefix data:...)
-  var fotoMimeList   = [];  // mime type tiap foto
-  var fotoPending    = 0;   // jumlah foto yang masih dalam proses kompresi
-  var isSubmitting   = false;
-
-  // ── Set tanggal default = hari ini ──────────────────────────
-  (function setDefaultDate() {
-    var now  = new Date();
-    var yyyy = now.getFullYear();
-    var mm   = String(now.getMonth() + 1).padStart(2, '0');
-    var dd   = String(now.getDate()).padStart(2, '0');
-    document.getElementById('tanggalLaporan').value = yyyy + '-' + mm + '-' + dd;
-  })();
-
-  // ── Progress bar ─────────────────────────────────────────────
-  function updateProgress() {
-    var filled = [
-      document.getElementById('nama').value.trim(),
-      document.getElementById('tanggalLaporan').value,
-      selectedShift,
-      document.getElementById('kegiatan').value.trim()
-    ].filter(Boolean).length;
-    var pct = Math.round(filled / 4 * 100);
-    document.getElementById('progressFill').style.width = pct + '%';
-    document.getElementById('progressPct').textContent  = pct + '%';
-  }
-  updateProgress();
-  ['nama', 'tanggalLaporan', 'kegiatan'].forEach(function (id) {
-    document.getElementById(id).addEventListener('input', updateProgress);
-    document.getElementById(id).addEventListener('change', updateProgress);
-  });
-
-  // ── Char counters ─────────────────────────────────────────────
-  function bindChar(textareaId, counterId) {
-    var ta = document.getElementById(textareaId);
-    var ct = document.getElementById(counterId);
-    if (!ta || !ct) return;
-    ta.addEventListener('input', function () {
-      var n   = ta.value.length;
-      var max = parseInt(ta.getAttribute('maxlength'), 10);
-      ct.textContent = n;
-      ct.style.color = n > max * 0.88 ? '#f59e0b' : 'var(--muted)';
-    });
-  }
-  bindChar('kegiatan', 'kegiatanCount');
-  bindChar('kendala',  'kendalaCount');
-  bindChar('tindakan', 'tindakanCount');
-  bindChar('catatan',  'catatanCount');
-
-  // ── Shift selector ────────────────────────────────────────────
-  document.querySelectorAll('.shift-btn').forEach(function (btn) {
-    btn.addEventListener('click', function () {
-      document.querySelectorAll('.shift-btn').forEach(function (b) { b.classList.remove('active'); });
-      btn.classList.add('active');
-      selectedShift = btn.getAttribute('data-shift');
-      updateProgress();
-    });
-  });
-
-  // ── Gangguan checkbox ─────────────────────────────────────────
-  document.querySelectorAll('.gangguan-btn').forEach(function (btn) {
-    btn.addEventListener('click', function () {
-      btn.classList.toggle('checked');
-      if (btn.id === 'lainnyaBtn') {
-        var wrap = document.getElementById('lainnyaInputWrap');
-        var inp  = document.getElementById('lainnyaInput');
-        if (btn.classList.contains('checked')) {
-          wrap.style.display = 'block';
-          setTimeout(function () { inp.focus(); }, 60);
-        } else {
-          wrap.style.display = 'none';
-          inp.value = '';
-        }
+      // ── Progress bar ─────────────────────────────────────────────
+      function updateProgress() {
+        var filled = [
+          document.getElementById('nama').value.trim(),
+          document.getElementById('tanggalLaporan').value,
+          selectedShift,
+          document.querySelectorAll('.gangguan-btn[data-kegiatan].checked').length > 0 ? 'filled' : '',
+        ].filter(Boolean).length;
+        var pct = Math.round(filled / 4 * 100);
+        document.getElementById('progressFill').style.width = pct + '%';
+        document.getElementById('progressPct').textContent = pct + '%';
       }
-    });
-  });
+      updateProgress();
+      ['nama', 'tanggalLaporan', 'kegiatan'].forEach(function (id) {
 
-  // ── Foto upload ───────────────────────────────────────────────
-  document.getElementById('fotoUploadArea').addEventListener('click', function () {
-    document.getElementById('fotoInput').click();
-  });
+      });
 
-  document.getElementById('fotoInput').addEventListener('change', function () {
-    var files = Array.prototype.slice.call(this.files);
-    var sisa  = 5 - fotoBase64List.length;
-    var toProcess = files.slice(0, sisa);
+      // ── Char counters ─────────────────────────────────────────────
+      function bindChar(textareaId, counterId) {
+        var ta = document.getElementById(textareaId);
+        var ct = document.getElementById(counterId);
+        if (!ta || !ct) return;
+        ta.addEventListener('input', function () {
+          var n = ta.value.length;
+          var max = parseInt(ta.getAttribute('maxlength'), 10);
+          ct.textContent = n;
+          ct.style.color = n > max * 0.88 ? '#f59e0b' : 'var(--muted)';
+        });
+      }
+      bindChar('kegiatan', 'kegiatanCount');
+      bindChar('kendala', 'kendalaCount');
+      bindChar('tindakan', 'tindakanCount');
+      bindChar('catatan', 'catatanCount');
 
-    toProcess.forEach(function (file) {
-      // Naikkan counter — foto ini belum selesai diproses
-      fotoPending++;
-      updateFotoStatus();
+      // ── Shift selector ────────────────────────────────────────────
+      document.querySelectorAll('.shift-btn').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          document.querySelectorAll('.shift-btn').forEach(function (b) { b.classList.remove('active'); });
+          btn.classList.add('active');
+          selectedShift = btn.getAttribute('data-shift');
+          updateProgress();
+        });
+      });
 
-      var reader = new FileReader();
-      reader.onload = function (ev) {
-        var img = new Image();
-        img.onload = function () {
-          try {
-            var canvas  = document.createElement('canvas');
-            var maxSize = 800;
-            var w = img.width;
-            var h = img.height;
-            if (w > h && w > maxSize) { h = Math.round(h * maxSize / w); w = maxSize; }
-            else if (h > maxSize)     { w = Math.round(w * maxSize / h); h = maxSize; }
-            canvas.width  = w;
-            canvas.height = h;
-            canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      // ── Gangguan checkbox ─────────────────────────────────────────
+      // ── Kegiatan checkbox ────────────────────────────────────
+      document.querySelectorAll('.gangguan-btn[data-kegiatan]').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          btn.classList.toggle('checked');
+          if (btn.id === 'kegiatanLainnyaBtn') {
+            var wrap = document.getElementById('kegiatanLainnyaWrap');
+            var inp = document.getElementById('kegiatanLainnya');
+            if (btn.classList.contains('checked')) {
+              wrap.style.display = 'block';
+              setTimeout(function () { inp.focus(); }, 60);
+            } else {
+              wrap.style.display = 'none';
+              inp.value = '';
+            }
+          }
+          updateProgress();
+        });
+      });
 
-            var dataUrl = canvas.toDataURL('image/jpeg', 0.7);
-            var b64     = dataUrl.split(',')[1];
-            fotoBase64List.push(b64);
-            fotoMimeList.push('image/jpeg');
-          } catch (err) {
-            console.error('Gagal kompresi foto:', err);
-          } finally {
-            // Turunkan counter — foto selesai (berhasil atau gagal)
+      // ── Foto upload ───────────────────────────────────────────────
+      document.getElementById('fotoUploadArea').addEventListener('click', function () {
+        document.getElementById('fotoInput').click();
+      });
+
+      document.getElementById('fotoInput').addEventListener('change', function () {
+        var files = Array.prototype.slice.call(this.files);
+        var sisa = 5 - fotoBase64List.length;
+        var toProcess = files.slice(0, sisa);
+
+        toProcess.forEach(function (file) {
+          // Naikkan counter — foto ini belum selesai diproses
+          fotoPending++;
+          updateFotoStatus();
+
+          var reader = new FileReader();
+          reader.onload = function (ev) {
+            var img = new Image();
+            img.onload = function () {
+              try {
+                var canvas = document.createElement('canvas');
+                var maxSize = 800;
+                var w = img.width;
+                var h = img.height;
+                if (w > h && w > maxSize) { h = Math.round(h * maxSize / w); w = maxSize; }
+                else if (h > maxSize) { w = Math.round(w * maxSize / h); h = maxSize; }
+                canvas.width = w;
+                canvas.height = h;
+                canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+
+                var dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+                var b64 = dataUrl.split(',')[1];
+                fotoBase64List.push(b64);
+                fotoMimeList.push('image/jpeg');
+              } catch (err) {
+                console.error('Gagal kompresi foto:', err);
+              } finally {
+                // Turunkan counter — foto selesai (berhasil atau gagal)
+                fotoPending--;
+                updateFotoStatus();
+                renderFotos();
+              }
+            };
+            img.onerror = function () {
+              console.error('Gagal load gambar');
+              fotoPending--;
+              updateFotoStatus();
+            };
+            img.src = ev.target.result;
+          };
+          reader.onerror = function () {
+            console.error('Gagal baca file');
             fotoPending--;
             updateFotoStatus();
-            renderFotos();
-          }
-        };
-        img.onerror = function () {
-          console.error('Gagal load gambar');
-          fotoPending--;
-          updateFotoStatus();
-        };
-        img.src = ev.target.result;
-      };
-      reader.onerror = function () {
-        console.error('Gagal baca file');
-        fotoPending--;
+          };
+          reader.readAsDataURL(file);
+        });
+
+        this.value = ''; // reset input supaya bisa pilih file yang sama lagi
+      });
+
+      function updateFotoStatus() {
+        var proc = document.getElementById('fotoProcessing');
+        var badge = document.getElementById('fotoCountBadge');
+        if (fotoPending > 0) {
+          proc.classList.add('show');
+          badge.textContent = '';
+        } else {
+          proc.classList.remove('show');
+          badge.textContent = fotoBase64List.length > 0 ? fotoBase64List.length + ' foto dipilih' : '';
+        }
+      }
+
+      function removeFoto(i) {
+        fotoBase64List.splice(i, 1);
+        fotoMimeList.splice(i, 1);
+        renderFotos();
         updateFotoStatus();
-      };
-      reader.readAsDataURL(file);
-    });
-
-    this.value = ''; // reset input supaya bisa pilih file yang sama lagi
-  });
-
-  function updateFotoStatus() {
-    var proc  = document.getElementById('fotoProcessing');
-    var badge = document.getElementById('fotoCountBadge');
-    if (fotoPending > 0) {
-      proc.classList.add('show');
-      badge.textContent = '';
-    } else {
-      proc.classList.remove('show');
-      badge.textContent = fotoBase64List.length > 0 ? fotoBase64List.length + ' foto dipilih' : '';
-    }
-  }
-
-  function removeFoto(i) {
-    fotoBase64List.splice(i, 1);
-    fotoMimeList.splice(i, 1);
-    renderFotos();
-    updateFotoStatus();
-  }
-
-  function renderFotos() {
-    var grid = document.getElementById('fotoPreviewGrid');
-    grid.innerHTML = '';
-
-    fotoBase64List.forEach(function (b64, i) {
-      var mime = fotoMimeList[i] || 'image/jpeg';
-      var src  = 'data:' + mime + ';base64,' + b64;
-      var wrap = document.createElement('div'); wrap.className = 'foto-thumb';
-      var img  = document.createElement('img');  img.src = src; img.alt = 'Foto ' + (i + 1);
-      var rb   = document.createElement('button');
-      rb.type = 'button'; rb.className = 'foto-remove'; rb.textContent = '✕';
-      (function (idx) { rb.addEventListener('click', function () { removeFoto(idx); }); })(i);
-      wrap.appendChild(img);
-      wrap.appendChild(rb);
-      grid.appendChild(wrap);
-    });
-
-    var uploadArea = document.getElementById('fotoUploadArea');
-    uploadArea.style.display = fotoBase64List.length >= 5 ? 'none' : 'flex';
-  }
-
-  // ── Toast helper ──────────────────────────────────────────────
-  function showToast(msg, type) {
-    var t = document.getElementById('toast');
-    t.textContent = msg;
-    t.className   = 'toast ' + (type || 'success');
-    t.classList.add('show');
-    setTimeout(function () { t.classList.remove('show'); }, 4000);
-  }
-
-  // ── Submit ────────────────────────────────────────────────────
-  document.getElementById('btnSubmit').addEventListener('click', function () {
-    if (isSubmitting) return;
-
-    // Blok submit kalau foto masih diproses
-    if (fotoPending > 0) {
-      showToast('⏳ Foto masih diproses, tunggu sebentar...', 'error');
-      return;
-    }
-
-    var nama     = document.getElementById('nama').value.trim();
-    var tanggal  = document.getElementById('tanggalLaporan').value;
-    var kegiatan = document.getElementById('kegiatan').value.trim();
-
-    if (!nama || !tanggal || !selectedShift || !kegiatan) {
-      alert('⚠️ Harap isi semua field yang wajib (bertanda *) sebelum mengirim laporan.');
-      return;
-    }
-
-    // Kumpulkan jenis gangguan
-    var lainnyaEl  = document.getElementById('lainnyaBtn');
-    var lainnyaTxt = lainnyaEl.classList.contains('checked')
-                       ? document.getElementById('lainnyaInput').value.trim()
-                       : '';
-    var gangguanArr = [];
-    document.querySelectorAll('.gangguan-btn.checked').forEach(function (el) {
-      var t = el.querySelector('.gangguan-text').textContent.trim();
-      if (t === 'Lainnya') {
-        gangguanArr.push(lainnyaTxt ? 'Lainnya: ' + lainnyaTxt : 'Lainnya');
-      } else {
-        gangguanArr.push(t);
       }
-    });
 
-    var payload = {
-      nama          : nama,
-      tanggal       : tanggal,
-      shift         : selectedShift,
-      kegiatan      : kegiatan,
-      jenisGangguan : gangguanArr.join(', '),
-      kendala       : document.getElementById('kendala').value.trim(),
-      waktuGangguan : document.getElementById('waktuGangguan').value,
-      durasiGangguan: document.getElementById('durasiGangguan').value.trim(),
-      tindakan      : document.getElementById('tindakan').value.trim(),
-      fotos         : fotoBase64List,   // array base64 murni
-      catatan       : document.getElementById('catatan').value.trim(),
-    };
+      function renderFotos() {
+        var grid = document.getElementById('fotoPreviewGrid');
+        grid.innerHTML = '';
 
-    // Debug log
-    console.log('=== DEBUG SUBMIT ===');
-    console.log('Jumlah foto:', fotoBase64List.length);
-    console.log('fotoPending:', fotoPending);
-    if (fotoBase64List.length > 0) {
-      console.log('Sample b64 (50 char):', fotoBase64List[0].substring(0, 50));
-    }
+        fotoBase64List.forEach(function (b64, i) {
+          var mime = fotoMimeList[i] || 'image/jpeg';
+          var src = 'data:' + mime + ';base64,' + b64;
+          var wrap = document.createElement('div'); wrap.className = 'foto-thumb';
+          var img = document.createElement('img'); img.src = src; img.alt = 'Foto ' + (i + 1);
+          var rb = document.createElement('button');
+          rb.type = 'button'; rb.className = 'foto-remove'; rb.textContent = '✕';
+          (function (idx) { rb.addEventListener('click', function () { removeFoto(idx); }); })(i);
+          wrap.appendChild(img);
+          wrap.appendChild(rb);
+          grid.appendChild(wrap);
+        });
 
-    // UI loading
-    isSubmitting = true;
-    var btn = document.getElementById('btnSubmit');
-    btn.disabled  = true;
-    btn.innerHTML = '<span class="spin">⏳</span> Mengirim...';
-
-    // Kirim ke Apps Script
-    // Content-Type harus 'text/plain' — GAS tidak support preflight CORS dari 'application/json'
-    fetch(SCRIPT_URL, {
-      method : 'POST',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body   : JSON.stringify(payload)
-    })
-    .then(function (res) {
-      // GAS selalu return 200, baca body-nya
-      return res.text();
-    })
-    .then(function (raw) {
-      console.log('Response Apps Script:', raw);
-      var result;
-      try { result = JSON.parse(raw); } catch(e) { result = { status: 'ok' }; }
-
-      if (result.status === 'error') {
-        showToast('❌ Server error: ' + (result.pesan || 'Unknown'), 'error');
-      } else {
-        showToast('✅ Laporan berhasil dikirim!', 'success');
-        resetForm();
+        var uploadArea = document.getElementById('fotoUploadArea');
+        uploadArea.style.display = fotoBase64List.length >= 5 ? 'none' : 'flex';
       }
-    })
-    .catch(function (err) {
-      console.error('Fetch error:', err);
-      // Jika no-cors dipakai, error network tapi kemungkinan data terkirim
-      // Tampilkan pesan ambigu
-      showToast('⚠️ Koneksi bermasalah. Cek sheet apakah data masuk.', 'error');
-    })
-    .finally(function () {
-      isSubmitting  = false;
-      btn.disabled  = false;
-      btn.innerHTML = '<span>📤</span> Kirim Laporan';
-    });
-  });
 
-  // ── Reset form ────────────────────────────────────────────────
-  function resetForm() {
-    ['nama','kegiatan','kendala','durasiGangguan','tindakan','catatan'].forEach(function (id) {
-      document.getElementById(id).value = '';
-    });
-    document.getElementById('waktuGangguan').value = '';
+      // ── Toast helper ──────────────────────────────────────────────
+      function showToast(msg, type) {
+        var t = document.getElementById('toast');
+        t.textContent = msg;
+        t.className = 'toast ' + (type || 'success');
+        t.classList.add('show');
+        setTimeout(function () { t.classList.remove('show'); }, 4000);
+      }
 
-    // Reset char counters
-    ['kegiatanCount','kendalaCount','tindakanCount','catatanCount'].forEach(function (id) {
-      document.getElementById(id).textContent = '0';
-    });
+      // ── Submit ────────────────────────────────────────────────────
+      document.getElementById('btnSubmit').addEventListener('click', function () {
+        if (isSubmitting) return;
 
-    // Reset shift
-    selectedShift = '';
-    document.querySelectorAll('.shift-btn').forEach(function (b) { b.classList.remove('active'); });
+        // Blok submit kalau foto masih diproses
+        if (fotoPending > 0) {
+          showToast('⏳ Foto masih diproses, tunggu sebentar...', 'error');
+          return;
+        }
 
-    // Reset gangguan
-    document.querySelectorAll('.gangguan-btn').forEach(function (btn) { btn.classList.remove('checked'); });
-    document.getElementById('lainnyaInputWrap').style.display = 'none';
-    document.getElementById('lainnyaInput').value = '';
+        var nama = document.getElementById('nama').value.trim();
+        var tanggal = document.getElementById('tanggalLaporan').value;
+        var kegiatan = document.getElementById('kegiatan').value.trim();
 
-    // Reset foto
-    fotoBase64List = [];
-    fotoMimeList   = [];
-    fotoPending    = 0;
-    renderFotos();
-    updateFotoStatus();
+        if (!nama || !tanggal || !selectedShift || !kegiatan) {
+          alert('⚠️ Harap isi semua field yang wajib (bertanda *) sebelum mengirim laporan.');
+          return;
+        }
 
-    // Set tanggal hari ini
-    var now  = new Date();
-    var yyyy = now.getFullYear();
-    var mm   = String(now.getMonth() + 1).padStart(2, '0');
-    var dd   = String(now.getDate()).padStart(2, '0');
-    document.getElementById('tanggalLaporan').value = yyyy + '-' + mm + '-' + dd;
+        // Kumpulkan jenis gangguan
+        var lainnyaEl = document.getElementById('lainnyaBtn');
+        var lainnyaTxt = lainnyaEl.classList.contains('checked')
+          ? document.getElementById('lainnyaInput').value.trim()
+          : '';
+        var gangguanArr = [];
+        document.querySelectorAll('.gangguan-btn.checked').forEach(function (el) {
+          var t = el.querySelector('.gangguan-text').textContent.trim();
+          if (t === 'Lainnya') {
+            gangguanArr.push(lainnyaTxt ? 'Lainnya: ' + lainnyaTxt : 'Lainnya');
+          } else {
+            gangguanArr.push(t);
+          }
+        });
 
-    updateProgress();
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }
+        var kegiatanArr = [];
+        document.querySelectorAll('.gangguan-btn[data-kegiatan].checked').forEach(function (el) {
+          var t = el.querySelector('.gangguan-text').textContent.trim();
+          if (t === 'Lainnya') {
+            var lainnya = document.getElementById('kegiatanLainnya').value.trim();
+            if (lainnya) kegiatanArr.push('Lainnya: ' + lainnya);
+          } else {
+            kegiatanArr.push(t);
+          }
+        });
+        var kegiatan = kegiatanArr.join(', ');
 
-})();
-</script>
+        // Validasi wajib tetap sama:
+        if (!kegiatan) { alert('Harap isi data kegiatan terlebih dahulu!'); }
+
+        var payload = {
+          nama: nama,
+          tanggal: tanggal,
+          shift: selectedShift,
+
+          jenisGangguan: gangguanArr.join(', '),
+          kendala: document.getElementById('kendala').value.trim(),
+          waktuGangguan: document.getElementById('waktuGangguan').value,
+          durasiGangguan: document.getElementById('durasiGangguan').value.trim(),
+          tindakan: document.getElementById('tindakan').value.trim(),
+          fotos: fotoBase64List,   // array base64 murni
+          catatan: document.getElementById('catatan').value.trim(),
+        };
+
+        // Debug log
+        console.log('=== DEBUG SUBMIT ===');
+        console.log('Jumlah foto:', fotoBase64List.length);
+        console.log('fotoPending:', fotoPending);
+        if (fotoBase64List.length > 0) {
+          console.log('Sample b64 (50 char):', fotoBase64List[0].substring(0, 50));
+        }
+
+        // UI loading
+        isSubmitting = true;
+        var btn = document.getElementById('btnSubmit');
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spin">⏳</span> Mengirim...';
+
+        // Kirim ke Apps Script
+        // Content-Type harus 'text/plain' — GAS tidak support preflight CORS dari 'application/json'
+        fetch(SCRIPT_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify(payload)
+        })
+          .then(function (res) {
+            // GAS selalu return 200, baca body-nya
+            return res.text();
+          })
+          .then(function (raw) {
+            console.log('Response Apps Script:', raw);
+            var result;
+            try { result = JSON.parse(raw); } catch (e) { result = { status: 'ok' }; }
+
+            if (result.status === 'error') {
+              showToast('❌ Server error: ' + (result.pesan || 'Unknown'), 'error');
+            } else {
+              showToast('✅ Laporan berhasil dikirim!', 'success');
+              resetForm();
+            }
+          })
+          .catch(function (err) {
+            console.error('Fetch error:', err);
+            // Jika no-cors dipakai, error network tapi kemungkinan data terkirim
+            // Tampilkan pesan ambigu
+            showToast('⚠️ Koneksi bermasalah. Cek sheet apakah data masuk.', 'error');
+          })
+          .finally(function () {
+            isSubmitting = false;
+            btn.disabled = false;
+            btn.innerHTML = '<span>📤</span> Kirim Laporan';
+          });
+      });
+
+      // ── Reset form ────────────────────────────────────────────────
+      function resetForm() {
+        ['nama', 'kegiatan', 'kendala', 'durasiGangguan', 'tindakan', 'catatan'].forEach(function (id) {
+          document.getElementById(id).value = '';
+        });
+        document.getElementById('waktuGangguan').value = '';
+
+        // Reset char counters
+        ['kegiatanCount', 'kendalaCount', 'tindakanCount', 'catatanCount'].forEach(function (id) {
+          document.getElementById(id).textContent = '0';
+        });
+       
+        // Reset kegiatan checkbox
+        document.querySelectorAll('.gangguan-btn[data-kegiatan]').forEach(function (btn) {
+          btn.classList.remove('checked');
+        });
+        document.getElementById('kegiatanLainnyaWrap').style.display = 'none';
+        document.getElementById('kegiatanLainnya').value = '';
+
+        // Reset shift
+        selectedShift = '';
+        document.querySelectorAll('.shift-btn').forEach(function (b) { b.classList.remove('active'); });
+
+        // Reset gangguan
+        document.querySelectorAll('.gangguan-btn').forEach(function (btn) { btn.classList.remove('checked'); });
+        document.getElementById('lainnyaInputWrap').style.display = 'none';
+        document.getElementById('lainnyaInput').value = '';
+
+        // Reset foto
+        fotoBase64List = [];
+        fotoMimeList = [];
+        fotoPending = 0;
+        renderFotos();
+        updateFotoStatus();
+
+        // Set tanggal hari ini
+        var now = new Date();
+        var yyyy = now.getFullYear();
+        var mm = String(now.getMonth() + 1).padStart(2, '0');
+        var dd = String(now.getDate()).padStart(2, '0');
+        document.getElementById('tanggalLaporan').value = yyyy + '-' + mm + '-' + dd;
+
+        updateProgress();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+
+    })();
+  </script>
 </body>
+
 </html>
