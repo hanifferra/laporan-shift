@@ -389,23 +389,36 @@
   });
 
   document.getElementById('fotoInput').addEventListener('change', function () {
-    var files = Array.prototype.slice.call(this.files);
-    var sisa  = 5 - fotoBase64List.length;
-    files.slice(0, sisa).forEach(function (file) {
-      var mime = file.type || 'image/jpeg';
-      var r    = new FileReader();
-      r.onload = function (ev) {
-        // simpan hanya data base64 murni (tanpa prefix "data:...;base64,")
-        var raw = ev.target.result;
-        var b64 = raw.includes(',') ? raw.split(',')[1] : raw;
+  const files = Array.prototype.slice.call(this.files);
+  const sisa  = 5 - fotoBase64List.length;
+  files.slice(0, sisa).forEach(function (file) {
+    const mime = file.type || 'image/jpeg';
+    const reader = new FileReader();
+    reader.onload = function (ev) {
+      // Kompres foto sebelum disimpan
+      const img = new Image();
+      img.onload = function () {
+        const canvas = document.createElement('canvas');
+        const maxSize = 800; // max 800px
+        let w = img.width;
+        let h = img.height;
+        if (w > h && w > maxSize) { h = h * maxSize / w; w = maxSize; }
+        else if (h > maxSize) { w = w * maxSize / h; h = maxSize; }
+        canvas.width  = w;
+        canvas.height = h;
+        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+        const compressed = canvas.toDataURL('image/jpeg', 0.7);
+        const b64 = compressed.split(',')[1];
         fotoBase64List.push(b64);
-        fotoMimeList.push(mime);
+        fotoMimeList.push('image/jpeg');
         renderFotos();
       };
-      r.readAsDataURL(file);
-    });
-    this.value = '';
+      img.src = ev.target.result;
+    };
+    reader.readAsDataURL(file);
   });
+  this.value = '';
+});
 
   function removeFoto(i) {
     fotoBase64List.splice(i, 1);
