@@ -19,7 +19,6 @@
   html,body{width:100%;max-width:100%;overflow-x:hidden;-webkit-text-size-adjust:100%}
   body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding-bottom:48px}
 
-  /* ── Header ── */
   .header{background:linear-gradient(135deg,var(--surface) 0%,var(--bg) 100%);padding:28px 20px 24px;border-bottom:1px solid var(--border);position:relative;overflow:hidden}
   .header::before{content:'';position:absolute;top:-60px;right:-60px;width:180px;height:180px;background:radial-gradient(circle,rgba(79,110,247,.18) 0%,transparent 70%);border-radius:50%;pointer-events:none}
   .tag{display:inline-flex;align-items:center;gap:6px;background:rgba(79,110,247,.15);border:1px solid rgba(79,110,247,.3);color:#7da3ff;font-size:11px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;padding:5px 12px;border-radius:100px;margin-bottom:14px}
@@ -27,13 +26,11 @@
   h1{font-size:26px;font-weight:800;line-height:1.2;background:linear-gradient(135deg,var(--text) 20%,var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
   .subtitle{font-size:13px;color:var(--muted);margin-top:6px}
 
-  /* ── Progress ── */
   .progress-wrap{background:var(--surface);padding:14px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px}
   .progress-bar-bg{flex:1;height:6px;background:var(--border);border-radius:100px;overflow:hidden}
   .progress-bar-fill{height:100%;width:0%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:100px;transition:width .4s ease}
   .progress-pct{font-size:12px;font-weight:700;color:var(--accent);min-width:30px;text-align:right}
 
-  /* ── Cards ── */
   .content{padding:20px 16px;display:flex;flex-direction:column;gap:16px}
   .section-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);animation:fadeUp .4s ease both}
   .section-card:nth-child(2){animation-delay:.07s}
@@ -44,7 +41,6 @@
   .section-num{width:28px;height:28px;background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#fff;flex-shrink:0}
   .section-title{font-size:13px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted)}
 
-  /* ── Fields ── */
   .field-group{padding:16px 18px;display:flex;flex-direction:column;gap:18px}
   .field-label{font-size:13px;font-weight:600;color:var(--label);margin-bottom:8px;display:flex;align-items:center;gap:4px}
   .required{color:var(--accent);font-size:14px;line-height:1}
@@ -61,7 +57,6 @@
   input::placeholder,textarea::placeholder{color:var(--muted);opacity:.6}
   .char-count{text-align:right;font-size:11px;color:var(--muted);margin-top:5px}
 
-  /* ── Shift buttons ── */
   .shift-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
   .shift-btn{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:14px 8px;text-align:center;cursor:pointer;transition:all .2s;-webkit-tap-highlight-color:transparent;width:100%;font-family:inherit}
   .shift-btn:active{transform:scale(.96)}
@@ -70,7 +65,6 @@
   .shift-name{font-size:13px;font-weight:700;color:var(--text);display:block}
   .shift-time{font-size:10px;color:var(--muted);margin-top:2px;font-weight:500;display:block}
 
-  /* ── Gangguan checkboxes ── */
   .gangguan-list{display:flex;flex-direction:column;gap:8px}
   .gangguan-btn{display:flex;align-items:center;gap:12px;background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:13px 14px;cursor:pointer;transition:all .2s;-webkit-tap-highlight-color:transparent;width:100%;text-align:left;font-family:inherit}
   .gangguan-btn.checked{border-color:var(--accent);background:rgba(79,110,247,.08)}
@@ -81,11 +75,10 @@
   .gangguan-text{font-size:14px;font-weight:500;color:var(--label)}
   .gangguan-btn.checked .gangguan-text{color:var(--text);font-weight:600}
 
-  /* ── Info box ── */
   .info-box{display:flex;align-items:flex-start;gap:8px;font-size:12px;color:var(--muted);background:rgba(79,110,247,.07);border:1px solid rgba(79,110,247,.18);border-radius:9px;padding:10px 12px;margin-bottom:6px;line-height:1.4}
   .info-box::before{content:'ℹ️';font-size:13px;flex-shrink:0;margin-top:1px}
 
-  /* ── Foto upload ── */
+  /* Foto upload */
   .foto-upload-area{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;background:var(--surface);border:2px dashed var(--border);border-radius:var(--radius-sm);padding:24px 16px;cursor:pointer;transition:border-color .2s,background .2s;margin-bottom:12px;width:100%;font-family:inherit;-webkit-tap-highlight-color:transparent}
   .foto-upload-area:hover,.foto-upload-area:focus{border-color:var(--accent);background:rgba(79,110,247,.04)}
   .foto-upload-icon{font-size:28px}
@@ -98,12 +91,14 @@
   .foto-remove:hover{background:rgba(220,50,50,.85)}
   .foto-count-badge{font-size:12px;color:var(--muted);text-align:center;margin-top:4px}
 
-  /* ── Submit button ── */
+  /* Status foto processing */
+  .foto-processing{font-size:12px;color:var(--accent);text-align:center;margin-top:4px;display:none}
+  .foto-processing.show{display:block}
+
   .btn-submit{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:16px;background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;border-radius:var(--radius);color:#fff;font-family:inherit;font-size:15px;font-weight:700;cursor:pointer;transition:all .2s;box-shadow:0 4px 20px rgba(79,110,247,.35);margin-top:4px;-webkit-tap-highlight-color:transparent}
   .btn-submit:active{transform:scale(.98)}
   .btn-submit:disabled{opacity:.6;cursor:not-allowed}
 
-  /* ── Toast ── */
   .toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(80px);font-size:14px;font-weight:600;padding:13px 26px;border-radius:100px;box-shadow:0 8px 28px rgba(0,0,0,.28);transition:transform .32s ease;z-index:999;white-space:nowrap;pointer-events:none}
   .toast.success{background:var(--green);color:#fff}
   .toast.error{background:#ef4444;color:#fff}
@@ -111,20 +106,17 @@
   .spin{display:inline-block;animation:spin .8s linear infinite}
   @keyframes spin{to{transform:rotate(360deg)}}
 
-  /* ── Lainnya input (hidden by default) ── */
   #lainnyaInputWrap{margin-top:6px;display:none}
 </style>
 </head>
 <body>
 
-<!-- ══ HEADER ══════════════════════════════════════════════ -->
 <div class="header">
   <div class="tag">Sistem Pelaporan Tim</div>
   <h1>Laporan Kerja Harian</h1>
   <p class="subtitle">Isi laporan setelah selesai shift ya 👋</p>
 </div>
 
-<!-- ══ PROGRESS BAR ════════════════════════════════════════ -->
 <div class="progress-wrap">
   <div class="progress-bar-bg"><div class="progress-bar-fill" id="progressFill"></div></div>
   <div class="progress-pct" id="progressPct">0%</div>
@@ -132,24 +124,21 @@
 
 <div class="content">
 
-  <!-- ══ SEKSI 1: IDENTITAS ══════════════════════════════════ -->
+  <!-- SEKSI 1: IDENTITAS -->
   <div class="section-card">
     <div class="section-header">
       <div class="section-num">01</div>
       <div class="section-title">Identitas</div>
     </div>
     <div class="field-group">
-
       <div>
         <div class="field-label">Nama Anggota <span class="required">*</span></div>
         <input type="text" id="nama" placeholder="Masukkan nama lengkap" autocomplete="name" />
       </div>
-
       <div>
         <div class="field-label">Tanggal Laporan <span class="required">*</span></div>
         <input type="date" id="tanggalLaporan" />
       </div>
-
       <div>
         <div class="field-label">Pilih Shift <span class="required">*</span></div>
         <div class="shift-grid">
@@ -170,26 +159,22 @@
           </button>
         </div>
       </div>
-
     </div>
   </div>
 
-  <!-- ══ SEKSI 2: KEGIATAN ═══════════════════════════════════ -->
+  <!-- SEKSI 2: KEGIATAN -->
   <div class="section-card">
     <div class="section-header">
       <div class="section-num">02</div>
       <div class="section-title">Laporan Kegiatan</div>
     </div>
     <div class="field-group">
-
-      <!-- Kolom 5: Pekerjaan Hari Ini -->
       <div>
         <div class="field-label">Pekerjaan Hari Ini <span class="required">*</span></div>
         <textarea id="kegiatan" rows="4" maxlength="600" placeholder="Ceritakan pekerjaan yang dilakukan selama shift..."></textarea>
         <div class="char-count"><span id="kegiatanCount">0</span>/600</div>
       </div>
 
-      <!-- Kolom 6: Jenis Gangguan -->
       <div>
         <div class="field-label">Jenis Gangguan <span style="font-size:11px;font-weight:400;color:var(--muted)">(opsional, bisa pilih lebih dari satu)</span></div>
         <div class="gangguan-list">
@@ -223,7 +208,6 @@
         </div>
       </div>
 
-      <!-- Kolom 7: Kendala -->
       <div>
         <div class="field-label">Kendala</div>
         <div class="info-box">Opsional — isi jika ada hambatan yang dihadapi saat shift.</div>
@@ -231,7 +215,6 @@
         <div class="char-count"><span id="kendalaCount">0</span>/400</div>
       </div>
 
-      <!-- Kolom 8 & 9: Waktu + Durasi Gangguan -->
       <div>
         <div class="field-label">Detail Waktu Gangguan</div>
         <div class="row-2">
@@ -246,25 +229,21 @@
         </div>
       </div>
 
-      <!-- Kolom 10: Tindakan -->
       <div>
         <div class="field-label">Tindakan yang Dilakukan</div>
         <textarea id="tindakan" rows="4" maxlength="500" placeholder="Langkah atau tindakan yang sudah diambil..."></textarea>
         <div class="char-count"><span id="tindakanCount">0</span>/500</div>
       </div>
-
     </div>
   </div>
 
-  <!-- ══ SEKSI 3: FOTO & CATATAN ═════════════════════════════ -->
+  <!-- SEKSI 3: FOTO & CATATAN -->
   <div class="section-card">
     <div class="section-header">
       <div class="section-num">03</div>
       <div class="section-title">Foto &amp; Catatan</div>
     </div>
     <div class="field-group">
-
-      <!-- Kolom 11: Foto Dokumentasi -->
       <div>
         <div class="field-label">Foto Dokumentasi</div>
         <div class="info-box">Opsional — foto bukti gangguan atau dokumentasi kegiatan shift. Maks 5 foto.</div>
@@ -275,43 +254,41 @@
         </button>
         <input type="file" id="fotoInput" accept="image/*" multiple style="display:none" />
         <div class="foto-preview-grid" id="fotoPreviewGrid"></div>
+        <div class="foto-processing" id="fotoProcessing">⏳ Memproses foto...</div>
         <div class="foto-count-badge" id="fotoCountBadge"></div>
       </div>
 
-      <!-- Kolom 12: Catatan Tambahan -->
       <div>
         <div class="field-label">Catatan Tambahan</div>
         <div class="info-box">Opsional — hal lain yang ingin dicatat atau dilaporkan.</div>
         <textarea id="catatan" rows="4" maxlength="500" placeholder="Tulis catatan tambahan di sini (jika ada)..."></textarea>
         <div class="char-count"><span id="catatanCount">0</span>/500</div>
       </div>
-
     </div>
   </div>
 
-  <!-- ══ SUBMIT ═══════════════════════════════════════════════ -->
   <button type="button" class="btn-submit" id="btnSubmit">
     <span>📤</span> Kirim Laporan
   </button>
 
-</div><!-- /content -->
+</div>
 
 <div class="toast" id="toast"></div>
 
-<!-- ══ SCRIPT ════════════════════════════════════════════════ -->
 <script>
 (function () {
   'use strict';
 
-  // ── Ganti dengan URL Web App Anda yang sudah di-deploy ──
+  // ── GANTI dengan URL Web App yang sudah di-deploy ──────────
   var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxd-6FxYpYBq-qM4AUiVNjLVnblaAlJnzEsru1mdydGq2YT-hPDDNYl5-WLWMMnYXCg/exec';
 
-  var selectedShift   = '';
-  var fotoBase64List  = [];   // menyimpan string base64 murni (tanpa prefix)
-  var fotoMimeList    = [];   // menyimpan mime type tiap foto
-  var isSubmitting    = false;
+  var selectedShift  = '';
+  var fotoBase64List = [];  // base64 murni (tanpa prefix data:...)
+  var fotoMimeList   = [];  // mime type tiap foto
+  var fotoPending    = 0;   // jumlah foto yang masih dalam proses kompresi
+  var isSubmitting   = false;
 
-  // ── Set tanggal default = hari ini ──────────────────────
+  // ── Set tanggal default = hari ini ──────────────────────────
   (function setDefaultDate() {
     var now  = new Date();
     var yyyy = now.getFullYear();
@@ -320,7 +297,7 @@
     document.getElementById('tanggalLaporan').value = yyyy + '-' + mm + '-' + dd;
   })();
 
-  // ── Progress bar (4 field wajib) ────────────────────────
+  // ── Progress bar ─────────────────────────────────────────────
   function updateProgress() {
     var filled = [
       document.getElementById('nama').value.trim(),
@@ -333,12 +310,12 @@
     document.getElementById('progressPct').textContent  = pct + '%';
   }
   updateProgress();
-  ['nama','tanggalLaporan','kegiatan'].forEach(function (id) {
+  ['nama', 'tanggalLaporan', 'kegiatan'].forEach(function (id) {
     document.getElementById(id).addEventListener('input', updateProgress);
     document.getElementById(id).addEventListener('change', updateProgress);
   });
 
-  // ── Char counters ────────────────────────────────────────
+  // ── Char counters ─────────────────────────────────────────────
   function bindChar(textareaId, counterId) {
     var ta = document.getElementById(textareaId);
     var ct = document.getElementById(counterId);
@@ -346,16 +323,16 @@
     ta.addEventListener('input', function () {
       var n   = ta.value.length;
       var max = parseInt(ta.getAttribute('maxlength'), 10);
-      ct.textContent  = n;
-      ct.style.color  = n > max * 0.88 ? '#f59e0b' : 'var(--muted)';
+      ct.textContent = n;
+      ct.style.color = n > max * 0.88 ? '#f59e0b' : 'var(--muted)';
     });
   }
-  bindChar('kegiatan',  'kegiatanCount');
-  bindChar('kendala',   'kendalaCount');
-  bindChar('tindakan',  'tindakanCount');
-  bindChar('catatan',   'catatanCount');
+  bindChar('kegiatan', 'kegiatanCount');
+  bindChar('kendala',  'kendalaCount');
+  bindChar('tindakan', 'tindakanCount');
+  bindChar('catatan',  'catatanCount');
 
-  // ── Shift selector ───────────────────────────────────────
+  // ── Shift selector ────────────────────────────────────────────
   document.querySelectorAll('.shift-btn').forEach(function (btn) {
     btn.addEventListener('click', function () {
       document.querySelectorAll('.shift-btn').forEach(function (b) { b.classList.remove('active'); });
@@ -365,7 +342,7 @@
     });
   });
 
-  // ── Gangguan checkbox ────────────────────────────────────
+  // ── Gangguan checkbox ─────────────────────────────────────────
   document.querySelectorAll('.gangguan-btn').forEach(function (btn) {
     btn.addEventListener('click', function () {
       btn.classList.toggle('checked');
@@ -383,71 +360,108 @@
     });
   });
 
-  // ── Foto upload ──────────────────────────────────────────
+  // ── Foto upload ───────────────────────────────────────────────
   document.getElementById('fotoUploadArea').addEventListener('click', function () {
     document.getElementById('fotoInput').click();
   });
 
   document.getElementById('fotoInput').addEventListener('change', function () {
-  const files = Array.prototype.slice.call(this.files);
-  const sisa  = 5 - fotoBase64List.length;
-  files.slice(0, sisa).forEach(function (file) {
-    const mime = file.type || 'image/jpeg';
-    const reader = new FileReader();
-    reader.onload = function (ev) {
-      // Kompres foto sebelum disimpan
-      const img = new Image();
-      img.onload = function () {
-        const canvas = document.createElement('canvas');
-        const maxSize = 800; // max 800px
-        let w = img.width;
-        let h = img.height;
-        if (w > h && w > maxSize) { h = h * maxSize / w; w = maxSize; }
-        else if (h > maxSize) { w = w * maxSize / h; h = maxSize; }
-        canvas.width  = w;
-        canvas.height = h;
-        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-        const compressed = canvas.toDataURL('image/jpeg', 0.7);
-        const b64 = compressed.split(',')[1];
-        fotoBase64List.push(b64);
-        fotoMimeList.push('image/jpeg');
-        renderFotos();
+    var files = Array.prototype.slice.call(this.files);
+    var sisa  = 5 - fotoBase64List.length;
+    var toProcess = files.slice(0, sisa);
+
+    toProcess.forEach(function (file) {
+      // Naikkan counter — foto ini belum selesai diproses
+      fotoPending++;
+      updateFotoStatus();
+
+      var reader = new FileReader();
+      reader.onload = function (ev) {
+        var img = new Image();
+        img.onload = function () {
+          try {
+            var canvas  = document.createElement('canvas');
+            var maxSize = 800;
+            var w = img.width;
+            var h = img.height;
+            if (w > h && w > maxSize) { h = Math.round(h * maxSize / w); w = maxSize; }
+            else if (h > maxSize)     { w = Math.round(w * maxSize / h); h = maxSize; }
+            canvas.width  = w;
+            canvas.height = h;
+            canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+
+            var dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+            var b64     = dataUrl.split(',')[1];
+            fotoBase64List.push(b64);
+            fotoMimeList.push('image/jpeg');
+          } catch (err) {
+            console.error('Gagal kompresi foto:', err);
+          } finally {
+            // Turunkan counter — foto selesai (berhasil atau gagal)
+            fotoPending--;
+            updateFotoStatus();
+            renderFotos();
+          }
+        };
+        img.onerror = function () {
+          console.error('Gagal load gambar');
+          fotoPending--;
+          updateFotoStatus();
+        };
+        img.src = ev.target.result;
       };
-      img.src = ev.target.result;
-    };
-    reader.readAsDataURL(file);
+      reader.onerror = function () {
+        console.error('Gagal baca file');
+        fotoPending--;
+        updateFotoStatus();
+      };
+      reader.readAsDataURL(file);
+    });
+
+    this.value = ''; // reset input supaya bisa pilih file yang sama lagi
   });
-  this.value = '';
-});
+
+  function updateFotoStatus() {
+    var proc  = document.getElementById('fotoProcessing');
+    var badge = document.getElementById('fotoCountBadge');
+    if (fotoPending > 0) {
+      proc.classList.add('show');
+      badge.textContent = '';
+    } else {
+      proc.classList.remove('show');
+      badge.textContent = fotoBase64List.length > 0 ? fotoBase64List.length + ' foto dipilih' : '';
+    }
+  }
 
   function removeFoto(i) {
     fotoBase64List.splice(i, 1);
     fotoMimeList.splice(i, 1);
     renderFotos();
+    updateFotoStatus();
   }
 
   function renderFotos() {
-    var grid  = document.getElementById('fotoPreviewGrid');
-    var badge = document.getElementById('fotoCountBadge');
+    var grid = document.getElementById('fotoPreviewGrid');
     grid.innerHTML = '';
 
     fotoBase64List.forEach(function (b64, i) {
       var mime = fotoMimeList[i] || 'image/jpeg';
       var src  = 'data:' + mime + ';base64,' + b64;
       var wrap = document.createElement('div'); wrap.className = 'foto-thumb';
-      var img  = document.createElement('img');  img.src = src; img.alt = 'Foto ' + (i+1);
-      var rb   = document.createElement('button'); rb.type='button'; rb.className='foto-remove'; rb.textContent='✕';
+      var img  = document.createElement('img');  img.src = src; img.alt = 'Foto ' + (i + 1);
+      var rb   = document.createElement('button');
+      rb.type = 'button'; rb.className = 'foto-remove'; rb.textContent = '✕';
       (function (idx) { rb.addEventListener('click', function () { removeFoto(idx); }); })(i);
-      wrap.appendChild(img); wrap.appendChild(rb);
+      wrap.appendChild(img);
+      wrap.appendChild(rb);
       grid.appendChild(wrap);
     });
 
     var uploadArea = document.getElementById('fotoUploadArea');
     uploadArea.style.display = fotoBase64List.length >= 5 ? 'none' : 'flex';
-    badge.textContent = fotoBase64List.length > 0 ? fotoBase64List.length + ' foto dipilih' : '';
   }
 
-  // ── Toast helper ─────────────────────────────────────────
+  // ── Toast helper ──────────────────────────────────────────────
   function showToast(msg, type) {
     var t = document.getElementById('toast');
     t.textContent = msg;
@@ -456,13 +470,19 @@
     setTimeout(function () { t.classList.remove('show'); }, 4000);
   }
 
-  // ── Submit ───────────────────────────────────────────────
+  // ── Submit ────────────────────────────────────────────────────
   document.getElementById('btnSubmit').addEventListener('click', function () {
     if (isSubmitting) return;
 
-    var nama    = document.getElementById('nama').value.trim();
-    var tanggal = document.getElementById('tanggalLaporan').value;
-    var kegiatan= document.getElementById('kegiatan').value.trim();
+    // Blok submit kalau foto masih diproses
+    if (fotoPending > 0) {
+      showToast('⏳ Foto masih diproses, tunggu sebentar...', 'error');
+      return;
+    }
+
+    var nama     = document.getElementById('nama').value.trim();
+    var tanggal  = document.getElementById('tanggalLaporan').value;
+    var kegiatan = document.getElementById('kegiatan').value.trim();
 
     if (!nama || !tanggal || !selectedShift || !kegiatan) {
       alert('⚠️ Harap isi semua field yang wajib (bertanda *) sebelum mengirim laporan.');
@@ -472,7 +492,7 @@
     // Kumpulkan jenis gangguan
     var lainnyaEl  = document.getElementById('lainnyaBtn');
     var lainnyaTxt = lainnyaEl.classList.contains('checked')
-                       ? (document.getElementById('lainnyaInput').value.trim())
+                       ? document.getElementById('lainnyaInput').value.trim()
                        : '';
     var gangguanArr = [];
     document.querySelectorAll('.gangguan-btn.checked').forEach(function (el) {
@@ -484,78 +504,97 @@
       }
     });
 
-    // Payload sesuai 12 kolom spreadsheet
     var payload = {
       nama          : nama,
       tanggal       : tanggal,
       shift         : selectedShift,
-      kegiatan      : kegiatan,                                           // Kol 5
-      jenisGangguan : gangguanArr.join(', '),                            // Kol 6
-      kendala       : document.getElementById('kendala').value.trim(),   // Kol 7
-      waktuGangguan : document.getElementById('waktuGangguan').value,    // Kol 8
-      durasiGangguan: document.getElementById('durasiGangguan').value.trim(), // Kol 9
-      tindakan      : document.getElementById('tindakan').value.trim(),  // Kol 10
-      fotos         : fotoBase64List,                                    // Kol 11 (base64)
-      catatan       : document.getElementById('catatan').value.trim(),   // Kol 12
+      kegiatan      : kegiatan,
+      jenisGangguan : gangguanArr.join(', '),
+      kendala       : document.getElementById('kendala').value.trim(),
+      waktuGangguan : document.getElementById('waktuGangguan').value,
+      durasiGangguan: document.getElementById('durasiGangguan').value.trim(),
+      tindakan      : document.getElementById('tindakan').value.trim(),
+      fotos         : fotoBase64List,   // array base64 murni
+      catatan       : document.getElementById('catatan').value.trim(),
     };
+
+    // Debug log
+    console.log('=== DEBUG SUBMIT ===');
+    console.log('Jumlah foto:', fotoBase64List.length);
+    console.log('fotoPending:', fotoPending);
+    if (fotoBase64List.length > 0) {
+      console.log('Sample b64 (50 char):', fotoBase64List[0].substring(0, 50));
+    }
 
     // UI loading
     isSubmitting = true;
     var btn = document.getElementById('btnSubmit');
-    btn.disabled = true;
+    btn.disabled  = true;
     btn.innerHTML = '<span class="spin">⏳</span> Mengirim...';
 
+    // Kirim ke Apps Script
+    // Content-Type harus 'text/plain' — GAS tidak support preflight CORS dari 'application/json'
     fetch(SCRIPT_URL, {
       method : 'POST',
-      mode   : 'no-cors',   // GAS Web App tidak mendukung CORS, pakai no-cors
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
       body   : JSON.stringify(payload)
     })
-    .then(function () {
-      // no-cors → respons opaque, anggap sukses jika tidak error
-      showToast('✅ Laporan berhasil dikirim!', 'success');
-      resetForm();
+    .then(function (res) {
+      // GAS selalu return 200, baca body-nya
+      return res.text();
+    })
+    .then(function (raw) {
+      console.log('Response Apps Script:', raw);
+      var result;
+      try { result = JSON.parse(raw); } catch(e) { result = { status: 'ok' }; }
+
+      if (result.status === 'error') {
+        showToast('❌ Server error: ' + (result.pesan || 'Unknown'), 'error');
+      } else {
+        showToast('✅ Laporan berhasil dikirim!', 'success');
+        resetForm();
+      }
     })
     .catch(function (err) {
-      console.error(err);
-      showToast('❌ Gagal mengirim. Periksa koneksi internet.', 'error');
+      console.error('Fetch error:', err);
+      // Jika no-cors dipakai, error network tapi kemungkinan data terkirim
+      // Tampilkan pesan ambigu
+      showToast('⚠️ Koneksi bermasalah. Cek sheet apakah data masuk.', 'error');
     })
     .finally(function () {
-      isSubmitting = false;
-      btn.disabled = false;
+      isSubmitting  = false;
+      btn.disabled  = false;
       btn.innerHTML = '<span>📤</span> Kirim Laporan';
     });
   });
 
-  // ── Reset form setelah berhasil ──────────────────────────
+  // ── Reset form ────────────────────────────────────────────────
   function resetForm() {
-    document.getElementById('nama').value      = '';
-    document.getElementById('kegiatan').value  = '';
-    document.getElementById('kendala').value   = '';
-    document.getElementById('waktuGangguan').value  = '';
-    document.getElementById('durasiGangguan').value = '';
-    document.getElementById('tindakan').value  = '';
-    document.getElementById('catatan').value   = '';
+    ['nama','kegiatan','kendala','durasiGangguan','tindakan','catatan'].forEach(function (id) {
+      document.getElementById(id).value = '';
+    });
+    document.getElementById('waktuGangguan').value = '';
 
     // Reset char counters
-    ['kegiatanCount','kendalaCount','tindakanCount','catatanCount']
-      .forEach(function(id){ document.getElementById(id).textContent = '0'; });
+    ['kegiatanCount','kendalaCount','tindakanCount','catatanCount'].forEach(function (id) {
+      document.getElementById(id).textContent = '0';
+    });
 
     // Reset shift
     selectedShift = '';
     document.querySelectorAll('.shift-btn').forEach(function (b) { b.classList.remove('active'); });
 
     // Reset gangguan
-    document.querySelectorAll('.gangguan-btn').forEach(function (btn) {
-      btn.classList.remove('checked');
-    });
+    document.querySelectorAll('.gangguan-btn').forEach(function (btn) { btn.classList.remove('checked'); });
     document.getElementById('lainnyaInputWrap').style.display = 'none';
     document.getElementById('lainnyaInput').value = '';
 
     // Reset foto
     fotoBase64List = [];
     fotoMimeList   = [];
+    fotoPending    = 0;
     renderFotos();
+    updateFotoStatus();
 
     // Set tanggal hari ini
     var now  = new Date();
