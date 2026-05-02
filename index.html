@@ -488,7 +488,7 @@
     </div>
     <div class="field-group">
       <div class="rencana-box">
-        <div class="rencana-title">Periode 28 April s.d 04 Mei 2025</div>
+        <div class="rencana-title">Periode 28 April s.d 04 Mei 2026</div>
         <ol class="rencana-list">
           <li>Pengecekan tegangan AVR dan Instalasi PLN</li>
           <li>Membersihkan kebun dan halaman kantor</li>
@@ -590,7 +590,7 @@
 
       <!-- Jenis Gangguan -->
       <div>
-        <div class="label">Jenis Gangguan <span class="label-opt">(opsional, bisa lebih dari satu)</span></div>
+        <div class="label">Jenis Gangguan <span class="label-opt">(opsional, kosongkan bila tidak ada)</span></div>
         <div class="check-list" id="gangguanList">
           <button type="button" class="check-btn" data-gangguan="Layar freeze">
             <div class="check-box">✓</div>
@@ -910,7 +910,7 @@
 
     /* Kumpulkan kegiatan */
     var kegiatanArr = [];
-    document.querySelectorAll('#kegiatanList .check-btn.checked').forEach(function (el) {
+    document.querySelectorAll('#kegiatanList .check-btn.checked').forEach(function (el) 
       var teks = el.getAttribute('data-kegiatan');
       if (teks === 'Lainnya') {
         var lain = document.getElementById('lainnyaKegiatanInput').value.trim();
