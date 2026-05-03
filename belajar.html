@@ -68,14 +68,21 @@
       width: 100%;
       max-width: 100%;
       overflow-x: hidden;
-      -webkit-text-size-adjust: 100%
+      -webkit-text-size-adjust: 100% 
+      /*Mencegah perangkat iOS (seperti iPhone atau iPad) 
+      memperbesar ukuran teks secara otomatis saat 
+      perangkat diputar menjadi mode mendatar (landscape)*/
     }
 
     body {
-      font-family: 'DM Sans', sans-serif;
-      background: var(--bg);
+      font-family: 'DM Sans', sans-serif; 
+      background: var(--bg); 
+      /*Adalah cara kita memanggil data 
+      dari gudang :root.*/ 
       color: var(--text);
-      min-height: 100vh;
+      min-height: 100vh; 
+      /*memaksa agar tinggi halaman web minimal 
+      harus menutupi 100% tinggi layar perangkat*/
       padding-bottom: 60px;
     }
 
@@ -83,11 +90,17 @@
     .header {
       background: var(--surface);
       border-bottom: 1px solid var(--border);
+      /*Kombinasi ini menciptakan area kepala website yang 
+      terpisah jelas dari isi konten utama, dan warnanya 
+      sudah dijamin aman saat mode gelap menyala.*/
       padding: 24px 20px 20px;
     }
 
     .header-top {
       display: flex;
+      /*Flexbox adalah sistem tata letak andalan di CSS 
+      modern untuk mengatur posisi elemen agar rapi dan 
+      responsif.*/
       align-items: center;
       justify-content: space-between;
       margin-bottom: 16px;
@@ -95,13 +108,16 @@
 
     .badge {
       font-size: 10px;
-      font-weight: 600;
-      letter-spacing: .08em;
+      font-weight: 600; 
+      /*ditebalkan*/
+      letter-spacing: .08em; 
+      /*jarak antar huruf direnggangkan sedikit*/
       text-transform: uppercase;
       color: var(--accent);
       background: var(--accent-light);
       border: 1px solid rgba(37, 99, 235, .2);
-      border-radius: 100px;
+      border-radius: 100px; 
+      /*bentuk sudutnya membulat penuh menyerupai pil.*/
       padding: 4px 10px;
     }
 
@@ -115,8 +131,16 @@
       font-size: 22px;
       font-weight: 700;
       color: var(--text);
+      /*warnanya dinamis mengikuti variabel*/
       line-height: 1.25;
+      /*Ini mengatur spasi antar baris. Jika teks judul 
+      terlalu panjang dan turun ke baris kedua, jarak 
+      atas-bawah antar baris teksnya tidak akan terlalu 
+      rapat.*/
       margin-bottom: 4px;
+      /*Ini memberikan daya dorong (jarak kosong) ke arah 
+      luar bagian bawah, agar teks judul ini tidak menempel 
+      kencang dengan teks di bawahnya.*/
     }
 
     .subtitle {
@@ -151,10 +175,20 @@
 
     .progress-bar-fill {
       height: 100%;
+      /*Memastikan tinggi warna isian ini menutupi seluruh tinggi wadah 
+      luarnya secara penuh.*/
       width: 0%;
+      /*Progres awalnya disetel ke 0% (kosong).*/
       background: linear-gradient(90deg, var(--accent), var(--accent2));
+      /*Alih-alih warna solid, baris ini membuat efek warna gradasi! 🌈 
+      Nilai 90deg berarti warnanya mengalir mendatar dari kiri ke kanan, 
+      merupakan perpaduan antara variabel --accent*/
       border-radius: 100px;
       transition: width .45s cubic-bezier(.4, 0, .2, 1);
+      /*Ini adalah sihir animasinya! ✨ Aturan ini memerintahkan browser: 
+      "Jika sewaktu-waktu nilai width (lebar) berubah, jangan ubah secara 
+      instan atau kaku. Buat perubahannya mengalir mulus selama 0,45 detik 
+      dengan ritme pergerakan yang natural".*/
     }
 
     .progress-pct {
@@ -171,6 +205,8 @@
       padding: 16px;
       display: flex;
       flex-direction: column;
+      /*aturan ini memaksa elemen-elemen di dalam .content untuk 
+      berbaris rapi dari atas ke bawah*/
       gap: 14px;
     }
 
@@ -179,24 +215,27 @@
       background: var(--card);
       border: 1px solid var(--border);
       border-radius: var(--radius);
-      overflow: visible;
+      overflow: hidden;
+      /*aturan ini sangat penting. Jika ada gambar atau elemen di dalam 
+      kartu yang ujungnya lancip meluber keluar, bagian yang lancip itu 
+      akan "dipotong" dan disembunyikan agar tetap mengikuti bentuk 
+      lengkungan batas luar kartu.*/
       box-shadow: var(--shadow);
-      position: relative;
-      z-index: 1;
-    }
-
-    .card.dropdown-active {
-      z-index: 100;
-    }
-
-    .card {
+      /*Kombinasi ini menciptakan bentuk kotak bersudut melengkung 
+      dengan efek bayangan yang elegan.*/
       opacity: 0;
       transform: translateY(12px);
+      /*menggeser posisi elemen ke arah bawah sejauh 12 piksel*/
       animation: fadeUp .4s ease forwards;
+      /*memanggil instruksi animasi bernama "fadeUp" berdurasi 0,4 detik*/
     }
 
     .card:nth-child(1) {
+        /*Ini adalah pseudo-class yang sangat canggih. 
+        Fungsinya adalah memilih elemen berdasarkan urutannya.*/
       animation-delay: .04s
+      /*Ini mengatur waktu tunggu (jeda) sebelum animasi fadeUp 
+      tadi mulai berjalan.*/
     }
 
     .card:nth-child(2) {
@@ -216,6 +255,10 @@
         opacity: 1;
         transform: translateY(0)
       }
+      /*Ini adalah cara CSS membuat skenario animasi. Kita memberi 
+      nama skenario ini fadeUp.
+      Blok (to) ini adalah tujuan akhir animasinya.
+      */
     }
 
     .card-header {
@@ -230,6 +273,8 @@
       width: 26px;
       height: 26px;
       background: linear-gradient(135deg, var(--accent), var(--accent2));
+      /*Warnanya menggunakan efek gradasi menyilang (135deg) dari variabel 
+      warna aksen*/
       border-radius: 7px;
       display: flex;
       align-items: center;
@@ -238,12 +283,15 @@
       font-weight: 700;
       color: #fff;
       flex-shrink: 0;
+      /*Aturan ini memastikan kotak nomor pantang menyusut ukurannya, 
+      walaupun ruang layar di sekitarnya kelak menjadi sangat sempit.*/
     }
 
     .card-title {
       font-size: 12px;
       font-weight: 600;
       letter-spacing: .06em;
+      /*diberi jarak ekstra antar huruf*/
       text-transform: uppercase;
       color: var(--muted);
     }
@@ -293,10 +341,14 @@
       font-size: 14px;
       padding: 11px 13px;
       outline: none;
+      appearance: none;
+      /*Menghapus gaya bawaan dari browser atau sistem operasi agar desain 
+      warna dan bingkai kustom kita tidak bertabrakan dengan gaya bawaan.*/
       transition: border-color .18s, box-shadow .18s;
       -webkit-appearance: none;
-      appearance: none;
       resize: none;
+      /*ini mencegah pengguna menarik sudut kotak untuk mengubah ukurannya 
+      secara bebas yang bisa merusak tata letak.*/
       display: block;
     }
 
@@ -310,15 +362,22 @@
     textarea:focus {
       border-color: var(--accent);
       box-shadow: 0 0 0 3px rgba(37, 99, 235, .12);
+      /*Aturan ini memberi tahu browser: "Ketika pengguna mengklik atau 
+      menyentuh kotak ini untuk mulai mengetik, ubah warna bingkainya 
+      menjadi warna aksen dan berikan efek bayangan menyala!" ✨*/
     }
 
     input::placeholder,
     textarea::placeholder {
       color: var(--muted);
       opacity: .55
+      /*Ini menargetkan teks "bayangan" atau petunjuk yang ada di dalam 
+      kotak input sebelum pengguna mengetik.
+      Misalnya teks "Ketik pesan di sini..."). Warnanya dibuat redup*/
     }
 
     .char-count {
+        /*Gaya untuk angka penghitung karakter (misal: "0/150").*/
       text-align: right;
       font-size: 11px;
       color: var(--muted);
@@ -326,7 +385,13 @@
       font-family: 'DM Mono', monospace;
     }
 
-    .row-2 {
+    .row-2 
+    /*Di sini kita menggunakan CSS Grid (display: grid). Aturan 
+    grid-template-columns: 1fr 1fr; akan membelah baris tersebut menjadi 
+    dua kolom yang lebarnya persis sama (1 fraksi banding 1 fraksi). 
+    Ini sangat bagus untuk meletakkan input "Tanggal" dan "Waktu" 
+    bersebelahan!*/
+    {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 12px;
@@ -336,131 +401,6 @@
       .row-2 {
         grid-template-columns: 1fr
       }
-    }
-
-    /* ── CUSTOM SELECT (NAMA) ── */
-    .custom-select-wrap {
-      position: relative;
-    }
-
-    .custom-select-btn {
-      width: 100%;
-      background: var(--surface);
-      border: 1.5px solid var(--border);
-      border-radius: var(--radius-sm);
-      color: var(--text);
-      font-family: 'DM Sans', sans-serif;
-      font-size: 14px;
-      padding: 11px 13px;
-      outline: none;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 8px;
-      transition: border-color .18s, box-shadow .18s;
-      text-align: left;
-      min-height: 46px;
-      -webkit-tap-highlight-color: transparent;
-    }
-
-    .custom-select-btn:focus,
-    .custom-select-btn.open {
-      border-color: var(--accent);
-      box-shadow: 0 0 0 3px rgba(37, 99, 235, .12);
-    }
-
-    .custom-select-value {
-      flex: 1;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-
-    .custom-select-value.placeholder {
-      color: var(--muted);
-      opacity: .55;
-    }
-
-    .custom-select-arrow {
-      font-size: 12px;
-      color: var(--muted);
-      flex-shrink: 0;
-      transition: transform .2s ease;
-      line-height: 1;
-    }
-
-    .custom-select-btn.open .custom-select-arrow {
-      transform: rotate(180deg);
-    }
-
-    .custom-select-dropdown {
-      display: none;
-      position: absolute;
-      top: calc(100% + 5px);
-      left: 0;
-      right: 0;
-      background: var(--card);
-      border: 1.5px solid var(--accent);
-      border-radius: var(--radius-sm);
-      box-shadow: 0 8px 24px rgba(0,0,0,.12);
-      z-index: 9999;
-      overflow-y: auto;
-      max-height: 260px;
-      animation: dropDown .15s ease;
-    }
-
-    .custom-select-dropdown.open {
-      display: block;
-    }
-
-    @keyframes dropDown {
-      from { opacity: 0; transform: translateY(-6px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-
-    .custom-select-option {
-      padding: 12px 15px;
-      font-size: 14px;
-      font-weight: 500;
-      color: var(--text-2);
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      transition: background .12s, color .12s;
-      border-bottom: 1px solid var(--border);
-    }
-
-    .custom-select-option:last-child {
-      border-bottom: none;
-    }
-
-    .custom-select-option:hover,
-    .custom-select-option:active {
-      background: var(--accent-light);
-      color: var(--accent);
-    }
-
-    .custom-select-option.selected {
-      background: var(--accent-light);
-      color: var(--accent);
-      font-weight: 700;
-    }
-
-    .custom-select-option::before {
-      content: '•';
-      font-size: 18px;
-      color: var(--border);
-      flex-shrink: 0;
-      line-height: 1;
-      transition: color .12s;
-    }
-
-    .custom-select-option:hover::before,
-    .custom-select-option:active::before,
-    .custom-select-option.selected::before {
-      color: var(--accent);
     }
 
     /* ── SHIFT ── */
@@ -852,29 +792,10 @@
         <div class="card-title">Identitas</div>
       </div>
       <div class="field-group">
-
-        <!-- NAMA DROPDOWN -->
         <div>
           <div class="label">Nama Anggota <span class="req">*</span></div>
-          <div class="custom-select-wrap" id="namaWrap">
-            <button type="button" class="custom-select-btn" id="namaSelectBtn" aria-haspopup="listbox" aria-expanded="false">
-              <span class="custom-select-value placeholder" id="namaSelectValue">Pilih nama anggota...</span>
-              <span class="custom-select-arrow" id="namaArrow">▾</span>
-            </button>
-            <div class="custom-select-dropdown" id="namaDropdown" role="listbox">
-              <div class="custom-select-option" data-value="As'ad" data-initial="A" role="option">As'ad</div>
-              <div class="custom-select-option" data-value="Eka" data-initial="E" role="option">Eka</div>
-              <div class="custom-select-option" data-value="Faqih" data-initial="F" role="option">Faqih</div>
-              <div class="custom-select-option" data-value="Ferra" data-initial="F" role="option">Ferra</div>
-              <div class="custom-select-option" data-value="Selpi" data-initial="S" role="option">Selpi</div>
-              <div class="custom-select-option" data-value="Tiara" data-initial="T" role="option">Tiara</div>
-              <div class="custom-select-option" data-value="Yudho" data-initial="Y" role="option">Yudho</div>
-            </div>
-          </div>
-          <!-- hidden input agar logika JS tetap pakai id="nama" -->
-          <input type="hidden" id="nama" />
+          <input type="text" id="nama" placeholder="Masukkan nama lengkap" autocomplete="name" />
         </div>
-
         <div>
           <div class="label">Tanggal Laporan <span class="req">*</span></div>
           <input type="date" id="tanggalLaporan" />
@@ -1087,16 +1008,24 @@
 
   <script>
     (function () {
-      'use strict';
-
-      /* ── CONFIG ── */
+      'use strict'; 
+      /*memastikan browser lebih ketat dalam mengecek kesalahan 
+      penulisan kode.*/
+      
+      /* ── CONFIG ── ganti dengan URL Web App Anda ── */
       var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxd-6FxYpYBq-qM4AUiVNjLVnblaAlJnzEsru1mdydGq2YT-hPDDNYl5-WLWMMnYXCg/exec';
 
       var selectedShift = '';
       var fotoBase64List = [];
       var fotoMimeList = [];
+      /*Melihat variabel fotoBase64List dan fotoMimeList, sepertinya
+      aplikasi tidak hanya mengirim teks, tetapi juga bisa mengirim
+      foto/gambar ke Google Apps Script dengan metode konversi Base64.
+      Ini adalah teknik Front-End tingkat menengah ke atas!*/
       var fotoPending = 0;
       var isSubmitting = false;
+      /*Variabel ini adalah kunci untuk membuat tombol loading agar pengguna
+      tidak bisa menekan tombol Submit berkali-kali saat data sedang dikirim.*/
 
       /* ── HEADER DATE ── */
       (function () {
@@ -1114,84 +1043,50 @@
         var mm = String(now.getMonth() + 1).padStart(2, '0');
         var dd = String(now.getDate()).padStart(2, '0');
         document.getElementById('tanggalLaporan').value = yyyy + '-' + mm + '-' + dd;
-      })();
+        })();
 
-      /* ── CUSTOM SELECT NAMA ── */
-      var namaBtn = document.getElementById('namaSelectBtn');
-      var namaDropdown = document.getElementById('namaDropdown');
-      var namaValueEl = document.getElementById('namaSelectValue');
-      var namaInput = document.getElementById('nama');
-      var isDropdownOpen = false;
-
-      function openDropdown() {
-        isDropdownOpen = true;
-        namaBtn.classList.add('open');
-        namaBtn.setAttribute('aria-expanded', 'true');
-        namaDropdown.classList.add('open');
-        var parentCard = namaBtn.closest('.card');
-        if (parentCard) parentCard.classList.add('dropdown-active');
-      }
-
-      function closeDropdown() {
-        isDropdownOpen = false;
-        namaBtn.classList.remove('open');
-        namaBtn.setAttribute('aria-expanded', 'false');
-        namaDropdown.classList.remove('open');
-        var parentCard = namaBtn.closest('.card');
-        if (parentCard) parentCard.classList.remove('dropdown-active');
-      }
-
-      namaBtn.addEventListener('click', function (e) {
-        e.stopPropagation();
-        if (isDropdownOpen) { closeDropdown(); } else { openDropdown(); }
-      });
-
-      document.querySelectorAll('.custom-select-option').forEach(function (opt) {
-        opt.addEventListener('click', function () {
-          var val = opt.getAttribute('data-value');
-          /* update tampilan */
-          namaValueEl.textContent = val;
-          namaValueEl.classList.remove('placeholder');
-          /* mark selected */
-          document.querySelectorAll('.custom-select-option').forEach(function (o) { o.classList.remove('selected'); });
-          opt.classList.add('selected');
-          /* simpan ke hidden input */
-          namaInput.value = val;
-          closeDropdown();
-          updateProgress();
-        });
-      });
-
-      /* Tutup dropdown kalau klik di luar */
-      document.addEventListener('click', function () {
-        if (isDropdownOpen) closeDropdown();
-      });
+        /*Bagian HEADER DATE dan DEFAULT DATE adalah contoh penerapan UX 
+        yang sangat baik. Daripada meminta pengguna memilih tanggal hari 
+        ini secara manual dari kalender, JavaScript Anda secara otomatis */
 
       /* ── PROGRESS ── */
       function updateProgress() {
         var score = 0;
-        if (namaInput.value.trim()) score++;
+        /*Ini adalah titik awal sebelum sistem memeriksa apa pun.*/
+        if (document.getElementById('nama').value.trim()) score++;
+        /*(menggunakan .trim() untuk memastikan spasi kosong tidak dihitung sebagai isian).*/
         if (document.getElementById('tanggalLaporan').value) score++;
         if (selectedShift) score++;
         if (document.querySelectorAll('#kegiatanList .check-btn.checked').length > 0) score++;
+        /*"Kegiatan" (memeriksa apakah ada elemen dengan class .checked).
+        Setiap kali sebuah syarat terpenuhi, skor bertambah satu (score++).*/
         var pct = Math.round(score / 4 * 100);
+        /*untuk mengubah skor (0 sampai 4) menjadi format persentase (0% sampai 100%).*/
         document.getElementById('progressFill').style.width = pct + '%';
         document.getElementById('progressPct').textContent = pct + '%';
       }
       updateProgress();
 
+      document.getElementById('nama').addEventListener('input', updateProgress);
       document.getElementById('tanggalLaporan').addEventListener('change', updateProgress);
 
       /* ── CHAR COUNTERS ── */
       [['kendala', 'kendalaCount'], ['tindakan', 'tindakanCount'], ['catatan', 'catatanCount']].forEach(function (pair) {
-        var ta = document.getElementById(pair[0]);
-        var ct = document.getElementById(pair[1]);
+        var ta = document.getElementById(pair[0]); /*adalah ID kotak teksnya*/
+        var ct = document.getElementById(pair[1]); /*adalah ID tempat angka penghitung ditampilkan.*/
         if (!ta || !ct) return;
-        ta.addEventListener('input', function () {
+        /*Jika kebetulan elemen HTML-nya terhapus atau tidak ditemukan,
+        JavaScript tidak akan error dan sekadar melewati langkah tersebut.*/
+        ta.addEventListener('input', function () /*adalah "telinga" program Anda.*/ {
           var n = ta.value.length;
           var max = parseInt(ta.getAttribute('maxlength'), 10);
+          /*Ini sangat cerdas. Anda menyuruh JavaScript membaca batas maksimal langsung
+          dari atribut HTML. Jadi, kalau esok hari Anda ingin mengubah batas karakter, 
+          Anda cukup mengubah HTML-nya saja tanpa perlu mengedit JavaScript ini lagi.*/
           ct.textContent = n;
           ct.style.color = n > max * 0.88 ? '#f59e0b' : 'var(--muted)';
+          /*Ini adalah logika jika batas maksimal suatu teks adalah 200 maka n>176 sehingga
+          saat user input huruf ke-177 maka kode ini bernilai benar dan warna berubah*/
         });
       });
 
@@ -1199,9 +1094,20 @@
       document.querySelectorAll('.shift-btn').forEach(function (btn) {
         btn.addEventListener('click', function () {
           document.querySelectorAll('.shift-btn').forEach(function (b) { b.classList.remove('active'); });
+          /*JavaScript mencari semua tombol shift di halaman, lalu secara paksa mencabut
+          status active (menyala) dari mereka semua. Ia tidak peduli tombol mana yang
+          sebelumnya menyala; pokoknya semua "lampu" dimatikan dulu.*/
           btn.classList.add('active');
+          /*Setelah semua tombol dipastikan mati, JavaScript memberikan status active
+          hanya kepada tombol (btn) yang baru saja diklik pengguna.*/
           selectedShift = btn.getAttribute('data-shift');
+          /*JavaScript mengambil teks atau nilai dari tombol yang diklik (misalnya 
+          "Pagi" atau Malam) dan menyimpannya ke variabel selectedShift. Jika Anda ingat, 
+          selectedShift inilah yang menjadi salah satu syarat penambah nilai di fungsi
+          updateProgress().*/
           updateProgress();
+          /*Karena pengguna baru saja mengisi data shift, JavaScript memanggil fungsi
+          penghitung progress bar agar baris warnanya maju.*/
         });
       });
 
@@ -1340,7 +1246,7 @@
           return;
         }
 
-        var nama = namaInput.value.trim();
+        var nama = document.getElementById('nama').value.trim();
         var tanggal = document.getElementById('tanggalLaporan').value;
 
         /* Kumpulkan kegiatan */
@@ -1358,7 +1264,7 @@
 
         /* Validasi wajib */
         if (!nama) {
-          showToast('⚠️ Nama anggota wajib dipilih.', 'error'); return;
+          showToast('⚠️ Nama anggota wajib diisi.', 'error'); return;
         }
         if (!tanggal) {
           showToast('⚠️ Tanggal laporan wajib diisi.', 'error'); return;
@@ -1431,13 +1337,7 @@
 
       /* ── RESET ── */
       function resetForm() {
-        /* Reset nama dropdown */
-        namaInput.value = '';
-        namaValueEl.textContent = 'Pilih nama anggota...';
-        namaValueEl.classList.add('placeholder');
-        document.querySelectorAll('.custom-select-option').forEach(function (o) { o.classList.remove('selected'); });
-
-        ['kendala', 'durasiGangguan', 'tindakan', 'catatan'].forEach(function (id) {
+        ['nama', 'kendala', 'durasiGangguan', 'tindakan', 'catatan'].forEach(function (id) {
           var el = document.getElementById(id);
           if (el) el.value = '';
         });
