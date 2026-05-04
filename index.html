@@ -93,6 +93,42 @@
       margin-bottom: 16px;
     }
 
+    /* ── HEADER RIGHT (tanggal + tombol dashboard) ── */
+    .header-right {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 7px;
+    }
+
+    /* ── TOMBOL DASHBOARD ── */
+    .btn-dashboard {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      color: #fff;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 6px 13px;
+      border-radius: 100px;
+      text-decoration: none;
+      letter-spacing: .02em;
+      white-space: nowrap;
+      transition: opacity .18s, transform .18s;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .btn-dashboard:active {
+      opacity: .85;
+      transform: scale(.96);
+    }
+
+    .btn-dashboard svg {
+      flex-shrink: 0;
+    }
+
     .badge {
       font-size: 10px;
       font-weight: 600;
@@ -808,7 +844,20 @@
   <div class="header">
     <div class="header-top">
       <div class="badge">Sistem Pelaporan Tim</div>
-      <div class="header-date" id="headerDate"></div>
+      <!-- Sisi kanan: tanggal + tombol dashboard -->
+      <div class="header-right">
+        <div class="header-date" id="headerDate"></div>
+        <a class="btn-dashboard" href="https://dasbor-tvri-tx-simpang-pematang.vercel.app/" target="_blank">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="0.5" y="0.5" width="4.5" height="4.5" rx="1.2" fill="white" opacity="0.95"/>
+            <rect x="7" y="0.5" width="4.5" height="4.5" rx="1.2" fill="white" opacity="0.95"/>
+            <rect x="0.5" y="7" width="4.5" height="4.5" rx="1.2" fill="white" opacity="0.95"/>
+            <rect x="7" y="7" width="4.5" height="2" rx="1" fill="white" opacity="0.95"/>
+            <rect x="7" y="9.5" width="4.5" height="2" rx="1" fill="white" opacity="0.5"/>
+          </svg>
+          Dashboard
+        </a>
+      </div>
     </div>
     <h1>Laporan Kerja Harian</h1>
     <p class="subtitle">Isi setelah selesai shift ya 👋</p>
@@ -872,7 +921,6 @@
               <div class="custom-select-option" data-value="Yudho" data-initial="Y" role="option">Yudho</div>
             </div>
           </div>
-          <!-- hidden input agar logika JS tetap pakai id="nama" -->
           <input type="hidden" id="nama" />
         </div>
 
@@ -911,7 +959,6 @@
       </div>
       <div class="field-group">
 
-        <!-- Pekerjaan Hari Ini -->
         <div>
           <div class="label">Pekerjaan Hari Ini <span class="req">*</span></div>
           <div class="check-list" id="kegiatanList">
@@ -955,7 +1002,6 @@
           </div>
         </div>
 
-        <!-- Jenis Gangguan -->
         <div>
           <div class="label">Jenis Gangguan <span class="label-opt">(opsional, kosongkan bila tidak ada)</span></div>
           <div class="check-list" id="gangguanList">
@@ -989,7 +1035,6 @@
           </div>
         </div>
 
-        <!-- Kendala -->
         <div>
           <div class="label">Kendala <span class="label-opt">(opsional)</span></div>
           <div class="info-box" style="margin-bottom:8px">
@@ -1001,7 +1046,6 @@
           <div class="char-count"><span id="kendalaCount">0</span>/400</div>
         </div>
 
-        <!-- Detail Waktu Gangguan -->
         <div>
           <div class="label">Detail Waktu Gangguan <span class="label-opt">(opsional)</span></div>
           <div class="row-2">
@@ -1016,7 +1060,6 @@
           </div>
         </div>
 
-        <!-- Tindakan -->
         <div>
           <div class="label">Tindakan yang Dilakukan <span class="label-opt">(opsional)</span></div>
           <textarea id="tindakan" rows="4" maxlength="500"
@@ -1090,7 +1133,6 @@
     (function () {
       'use strict';
 
-      /* ── CONFIG ── */
       var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxd-6FxYpYBq-qM4AUiVNjLVnblaAlJnzEsru1mdydGq2YT-hPDDNYl5-WLWMMnYXCg/exec';
 
       var selectedShift = '';
@@ -1150,20 +1192,16 @@
       document.querySelectorAll('.custom-select-option').forEach(function (opt) {
         opt.addEventListener('click', function () {
           var val = opt.getAttribute('data-value');
-          /* update tampilan */
           namaValueEl.textContent = val;
           namaValueEl.classList.remove('placeholder');
-          /* mark selected */
           document.querySelectorAll('.custom-select-option').forEach(function (o) { o.classList.remove('selected'); });
           opt.classList.add('selected');
-          /* simpan ke hidden input */
           namaInput.value = val;
           closeDropdown();
           updateProgress();
         });
       });
 
-      /* Tutup dropdown kalau klik di luar */
       document.addEventListener('click', function () {
         if (isDropdownOpen) closeDropdown();
       });
@@ -1344,7 +1382,6 @@
         var nama = namaInput.value.trim();
         var tanggal = document.getElementById('tanggalLaporan').value;
 
-        /* Kumpulkan kegiatan */
         var kegiatanArr = [];
         document.querySelectorAll('#kegiatanList .check-btn.checked').forEach(function (el) {
           var teks = el.getAttribute('data-kegiatan');
@@ -1357,21 +1394,11 @@
         });
         var kegiatan = kegiatanArr.join(',');
 
-        /* Validasi wajib */
-        if (!nama) {
-          showToast('⚠️ Nama anggota wajib dipilih.', 'error'); return;
-        }
-        if (!tanggal) {
-          showToast('⚠️ Tanggal laporan wajib diisi.', 'error'); return;
-        }
-        if (!selectedShift) {
-          showToast('⚠️ Pilih shift terlebih dahulu.', 'error'); return;
-        }
-        if (!kegiatan) {
-          showToast('⚠️ Pilih minimal satu pekerjaan hari ini.', 'error'); return;
-        }
+        if (!nama) { showToast('⚠️ Nama anggota wajib dipilih.', 'error'); return; }
+        if (!tanggal) { showToast('⚠️ Tanggal laporan wajib diisi.', 'error'); return; }
+        if (!selectedShift) { showToast('⚠️ Pilih shift terlebih dahulu.', 'error'); return; }
+        if (!kegiatan) { showToast('⚠️ Pilih minimal satu pekerjaan hari ini.', 'error'); return; }
 
-        /* Kumpulkan jenis gangguan */
         var gangguanArr = [];
         document.querySelectorAll('#gangguanList .check-btn.checked').forEach(function (el) {
           var teks = el.getAttribute('data-gangguan');
@@ -1397,7 +1424,6 @@
           catatan: document.getElementById('catatan').value.trim(),
         };
 
-        /* UI loading */
         isSubmitting = true;
         var btn = document.getElementById('btnSubmit');
         btn.disabled = true;
@@ -1432,7 +1458,6 @@
 
       /* ── RESET ── */
       function resetForm() {
-        /* Reset nama dropdown */
         namaInput.value = '';
         namaValueEl.textContent = 'Pilih nama anggota...';
         namaValueEl.classList.add('placeholder');
