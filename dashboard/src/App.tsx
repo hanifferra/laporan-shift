@@ -18,7 +18,7 @@ import _ from 'lodash';
 
 const COLORS = ['#2563EB', '#3B82F6', '#60A5FA', '#93C5FD', '#1E40AF', '#1D4ED8', '#BFDBFE'];
 
-const DEFAULT_SHEET_URL = 'https://docs.google.com/spreadsheets/d/1wZC9uKJWJopluktxUJF5xOenieUIUNpAOQMKrGv9U4k/edit?gid=625931813#gid=625931813';
+const DEFAULT_SHEET_URL = 'https://docs.google.com/spreadsheets/d/1wZC9uKJWJopluktxUJF5xOenieUIUNpAOQMKrGv9U4k/edit?gid=1597055105#gid=1597055105';
 
 export default function App() {
   const [sheetUrl, setSheetUrl] = useState(DEFAULT_SHEET_URL);
