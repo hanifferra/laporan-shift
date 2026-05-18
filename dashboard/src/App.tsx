@@ -345,7 +345,7 @@ export default function App() {
         ) : (
           <div className="space-y-8">
             {/* ── Quick Stats ── */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
               <StatCard label="Total Laporan" value={stats?.total || 0} icon={<Activity size={20} />} />
               <StatCard label="Kontributor" value={stats?.names.length || 0} icon={<Users size={20} />} />
               <StatCard label="Variasi Shift" value={stats?.shifts.length || 0} icon={<Clock size={20} />} />
@@ -943,13 +943,15 @@ function StatCard({
   return (
     <motion.div
       whileHover={{ y: -5, borderColor: '#BFDBFE' }}
-      className="p-6 rounded-3xl border border-blue-50 shadow-sm bg-white relative overflow-hidden transition-all"
+      className="p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-blue-50 shadow-sm bg-white relative overflow-hidden transition-all"
     >
-      <div className="flex items-center justify-between mb-4">
-        <div className="p-2 bg-blue-50 rounded-lg text-blue-600">{icon}</div>
+      <div className="flex items-center justify-between mb-3 sm:mb-4">
+        <div className="p-1.5 sm:p-2 bg-blue-50 rounded-lg text-blue-600">
+          {icon}
+        </div>
       </div>
-      <p className="text-xs font-mono uppercase tracking-[0.1em] text-slate-400 mb-1">{label}</p>
-      <p className="text-3xl font-bold leading-none tracking-tighter text-blue-950">{value}</p>
+      <p className="text-[9px] sm:text-xs font-mono uppercase tracking-[0.1em] text-slate-400 mb-1 line-clamp-1 truncate">{label}</p>
+      <p className="text-xl sm:text-3xl font-bold leading-none tracking-tighter text-blue-950 truncate">{value}</p>
     </motion.div>
   );
 }
