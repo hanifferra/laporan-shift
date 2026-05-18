@@ -39,47 +39,47 @@ const TARGET_SHEET_URL =
   'https://docs.google.com/spreadsheets/d/1wZC9uKJWJopluktxUJF5xOenieUIUNpAOQMKrGv9U4k/edit?gid=1866673689#gid=1866673689';
 
 const BULAN_ID = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Ags', 'Sep', 'Okt', 'Nov', 'Des'];
-const HARI_ID  = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
+const HARI_ID = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 interface DailySummary {
-  personnel:    string[];
-  shifts:       string[];
-  entries:      { activityList: string[]; action: string; time: string }[];
-  notes:        string[];
+  personnel: string[];
+  shifts: string[];
+  entries: { activityList: string[]; action: string; time: string }[];
+  notes: string[];
   disturbances: string[];
-  obstacles:    string[];
-  photos:       string[];
+  obstacles: string[];
+  photos: string[];
 }
 
 // ─── App ──────────────────────────────────────────────────────────────────────
 
 export default function App() {
-  const [sheetUrl]    = useState(DEFAULT_SHEET_URL);
-  const [data, setData]             = useState<SheetData | null>(null);
-  const [loading, setLoading]       = useState(false);
-  const [error, setError]           = useState<string | null>(null);
-  const [aiSummary, setAiSummary]   = useState<string | null>(null);
-  const [loadingAi, setLoadingAi]   = useState(false);
+  const [sheetUrl] = useState(DEFAULT_SHEET_URL);
+  const [data, setData] = useState<SheetData | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [aiSummary, setAiSummary] = useState<string | null>(null);
+  const [loadingAi, setLoadingAi] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const [activeTab, setActiveTab]   = useState<'overview' | 'data'>('overview');
-  const [selectedDate, setSelectedDate]   = useState<string | null>(null);
-  const [selectedWeek, setSelectedWeek]   = useState<string | null>(null);
-  const [targetData, setTargetData]       = useState<TargetEntry[]>([]);
+  const [activeTab, setActiveTab] = useState<'overview' | 'data'>('overview');
+  const [selectedDate, setSelectedDate] = useState<string | null>(null);
+  const [selectedWeek, setSelectedWeek] = useState<string | null>(null);
+  const [targetData, setTargetData] = useState<TargetEntry[]>([]);
   const [datesInCurrentWeek, setDatesInCurrentWeek] = useState<string[]>([]);
   const [slideDirection, setSlideDirection] = useState<'left' | 'right'>('left');
-
-  const touchStartX  = useRef<number | null>(null);
+  const [pieChartIndex, setPieChartIndex] = useState(0);
+  const touchStartX = useRef<number | null>(null);
   const dateScrollRef = useRef<HTMLDivElement>(null);
 
   // ─── Week key (Sel–Sen) ───────────────────────────────────────────────────
   const getWeekKey = (dateStr: string): string => {
-    const date    = new Date(dateStr);
-    const day     = date.getDay();
+    const date = new Date(dateStr);
+    const day = date.getDay();
     const selisih = day === 2 ? 0 : day > 2 ? day - 2 : day + 5;
-    const awal    = new Date(date); awal.setDate(date.getDate() - selisih);
-    const akhir   = new Date(awal); akhir.setDate(awal.getDate() + 6);
+    const awal = new Date(date); awal.setDate(date.getDate() - selisih);
+    const akhir = new Date(awal); akhir.setDate(awal.getDate() + 6);
     const fmt = (d: Date) => `${d.getDate()} ${BULAN_ID[d.getMonth()]}`;
     return `Sel ${fmt(awal)} – Sen ${fmt(akhir)} ${akhir.getFullYear()}`;
   };
@@ -105,7 +105,7 @@ export default function App() {
     const dateCol = data.headers.find(h => h.toLowerCase().includes('tanggal')) || '';
     const allKegiatan = datesInWeek.flatMap(date =>
       data.rows.filter(r => r[dateCol] === date).flatMap(r => {
-        const raw  = String(rowValue(r, 'pekerjaan') || rowValue(r, 'aktivitas') || '');
+        const raw = String(rowValue(r, 'pekerjaan') || rowValue(r, 'aktivitas') || '');
         const nama = String(rowValue(r, 'nama') || '');
         return raw.split(',').map(k => ({
           kegiatan: k.trim().replace(/\s*\|.*$/i, '').trim(),
@@ -145,9 +145,9 @@ export default function App() {
 
   useEffect(() => {
     if (!data || !selectedWeek) return;
-    const dateCol  = data.headers.find(h => h.toLowerCase().includes('tanggal')) || '';
+    const dateCol = data.headers.find(h => h.toLowerCase().includes('tanggal')) || '';
     const allDates = _.uniq(data.rows.map(r => r[dateCol]).filter(Boolean)).sort() as string[];
-    const groups   = _.groupBy(allDates, getWeekKey);
+    const groups = _.groupBy(allDates, getWeekKey);
     setDatesInCurrentWeek([...(groups[selectedWeek] ?? [])].sort());
   }, [data, selectedWeek]);
 
@@ -164,7 +164,7 @@ export default function App() {
       setTargetData(targetResult);
       setAiSummary(null);
       const dateCol = result.headers.find(h => h.toLowerCase().includes('tanggal')) || '';
-      const dates   = result.rows.map(r => r[dateCol]).filter(Boolean) as string[];
+      const dates = result.rows.map(r => r[dateCol]).filter(Boolean) as string[];
       if (dates.length > 0) {
         setSelectedDate(dates[dates.length - 1]);
         const weeks = _.uniq(dates.map(getWeekKey));
@@ -206,7 +206,7 @@ export default function App() {
     const entries = allPekerjaan.length > 0 ? [{
       activityList: allPekerjaan,
       action: _.uniq(dayRows.map(r => rowValue(r, 'tindakan')).filter(v => v && v !== '-' && v !== '')).join('; ') || '-',
-      time:   _.uniq(dayRows.map(r => rowValue(r, 'jam') || rowValue(r, 'mulai')).filter(Boolean)).join(', ') || '-',
+      time: _.uniq(dayRows.map(r => rowValue(r, 'jam') || rowValue(r, 'mulai')).filter(Boolean)).join(', ') || '-',
     }] : [];
 
     const notes = _.uniq(
@@ -216,7 +216,7 @@ export default function App() {
       })
     );
     const disturbances = dayRows.map(r => rowValue(r, 'gangguan')).filter((v): v is string => !!v && v !== 'N/A' && v !== '-' && v !== '');
-    const obstacles    = dayRows.map(r => rowValue(r, 'kendala')).filter((v): v is string =>  !!v && v !== 'N/A' && v !== '-' && v !== '');
+    const obstacles = dayRows.map(r => rowValue(r, 'kendala')).filter((v): v is string => !!v && v !== 'N/A' && v !== '-' && v !== '');
 
     const PHOTO_KEYWORDS = ['url foto', 'url_foto', 'bukti', 'gambar'];
     const photos = _.uniq(
@@ -255,7 +255,7 @@ export default function App() {
   }, [selectedDate, datesInCurrentWeek]);
 
   const handleTouchStart = (e: React.TouchEvent) => { touchStartX.current = e.touches[0].clientX; };
-  const handleTouchEnd   = (e: React.TouchEvent) => {
+  const handleTouchEnd = (e: React.TouchEvent) => {
     if (touchStartX.current === null) return;
     const diff = touchStartX.current - e.changedTouches[0].clientX;
     if (Math.abs(diff) > 50) navigateDate(diff > 0 ? 'next' : 'prev');
@@ -275,8 +275,8 @@ export default function App() {
 
   // ─── Table ────────────────────────────────────────────────────────────────
   const HIDDEN_KEYWORDS = ['timestamp', 'foto', 'dokumentasi', 'link', 'url', 'bukti', 'gambar', 'image'];
-  const displayHeaders  = data?.headers.filter(h => !HIDDEN_KEYWORDS.some(kw => h.toLowerCase().includes(kw))) || [];
-  const filteredRows    = data?.rows.filter(row =>
+  const displayHeaders = data?.headers.filter(h => !HIDDEN_KEYWORDS.some(kw => h.toLowerCase().includes(kw))) || [];
+  const filteredRows = data?.rows.filter(row =>
     Object.values(row).some(val => String(val).toLowerCase().includes(searchTerm.toLowerCase()))
   ) || [];
 
@@ -284,16 +284,16 @@ export default function App() {
   const getStats = () => {
     if (!data) return null;
     const col = (keys: string[]) => data.headers.find(h => keys.some(k => h.toLowerCase().includes(k)));
-    const nameCol  = col(['nama', 'person', 'petugas', 'teknisi']);
+    const nameCol = col(['nama', 'person', 'petugas', 'teknisi']);
     const shiftCol = col(['shift', 'waktu', 'periode']);
-    const typeCol  = col(['jenis', 'tipe', 'status', 'kategori']);
+    const typeCol = col(['jenis', 'tipe', 'status', 'kategori']);
     const toEntries = (obj: Record<string, number> | null) =>
       obj ? Object.entries(obj).map(([name, count]) => ({ name, count })) : [];
     return {
-      total:  data.rows.length,
-      names:  toEntries(nameCol  ? _.countBy(data.rows, nameCol)  : null),
+      total: data.rows.length,
+      names: toEntries(nameCol ? _.countBy(data.rows, nameCol) : null),
       shifts: toEntries(shiftCol ? _.countBy(data.rows, shiftCol) : null),
-      types:  toEntries(typeCol  ? _.countBy(data.rows, typeCol)  : null),
+      types: toEntries(typeCol ? _.countBy(data.rows, typeCol) : null),
     };
   };
   const stats = getStats();
@@ -301,9 +301,9 @@ export default function App() {
   // ─── Week groups ─────────────────────────────────────────────────────────
   const getWeekGroups = () => {
     if (!data) return { weekGroups: {} as Record<string, string[]>, sortedWeeks: [] as string[] };
-    const dateCol  = data.headers.find(h => h.toLowerCase().includes('tanggal')) || '';
+    const dateCol = data.headers.find(h => h.toLowerCase().includes('tanggal')) || '';
     const allDates = _.uniq(data.rows.map(r => r[dateCol]).filter(Boolean)).sort() as string[];
-    const weekGroups  = _.groupBy(allDates, getWeekKey);
+    const weekGroups = _.groupBy(allDates, getWeekKey);
     const sortedWeeks = Object.keys(weekGroups).sort((a, b) => {
       const lastA = [...weekGroups[a]].sort().at(-1)!;
       const lastB = [...weekGroups[b]].sort().at(-1)!;
@@ -384,10 +384,10 @@ export default function App() {
 
             {/* ── Quick Stats ── */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-              <StatCard label="Total Laporan"   value={stats?.total || 0}        icon={<Activity size={18} />} />
-              <StatCard label="Kontributor"     value={stats?.names.length || 0} icon={<Users size={18} />} />
-              <StatCard label="Variasi Shift"   value={stats?.shifts.length || 0}icon={<Clock size={18} />} />
-              <StatCard label="Entri Tersaring" value={filteredRows.length}       icon={<Calendar size={18} />} />
+              <StatCard label="Total Laporan" value={stats?.total || 0} icon={<Activity size={18} />} />
+              <StatCard label="Kontributor" value={stats?.names.length || 0} icon={<Users size={18} />} />
+              <StatCard label="Variasi Shift" value={stats?.shifts.length || 0} icon={<Clock size={18} />} />
+              <StatCard label="Entri Tersaring" value={filteredRows.length} icon={<Calendar size={18} />} />
             </div>
 
             {/* ── AI Banner (kompak) ── */}
@@ -450,46 +450,46 @@ export default function App() {
             <div className="space-y-6">
               <div className="flex gap-1 bg-slate-200 dark:bg-slate-800 p-1 rounded-xl w-fit">
                 <TabButton active={activeTab === 'overview'} onClick={() => setActiveTab('overview')} label="Dashboard Visual" />
-                <TabButton active={activeTab === 'data'}     onClick={() => setActiveTab('data')}     label="Tabel Data" />
+                <TabButton active={activeTab === 'data'} onClick={() => setActiveTab('data')} label="Tabel Data" />
               </div>
 
               {activeTab === 'overview' ? (
                 <div className="space-y-8">
                   {data.rows.length > 0 && (() => {
                     const { weekGroups, sortedWeeks } = getWeekGroups();
-                    const weeklyStatus  = getWeeklyTargetStatus(datesInCurrentWeek);
+                    const weeklyStatus = getWeeklyTargetStatus(datesInCurrentWeek);
                     const WEEKLY_TARGET = weeklyStatus?.targets.length ?? 7;
                     const achievedCount = weeklyStatus?.targets.filter(t => t.tercapai).length ?? datesInCurrentWeek.length;
-                    const progressPct   = Math.min((achievedCount / WEEKLY_TARGET) * 100, 100);
-                    const targetStatus  = achievedCount > WEEKLY_TARGET ? 'bonus' : achievedCount === WEEKLY_TARGET ? 'achieved' : 'incomplete';
+                    const progressPct = Math.min((achievedCount / WEEKLY_TARGET) * 100, 100);
+                    const targetStatus = achievedCount > WEEKLY_TARGET ? 'bonus' : achievedCount === WEEKLY_TARGET ? 'achieved' : 'incomplete';
 
                     const bannerThemes = {
                       incomplete: {
-                        bg:         'bg-amber-50 dark:bg-amber-950/50 border-amber-200 dark:border-amber-800',
-                        iconBg:     'bg-amber-500',
-                        icon:       <AlertCircle size={18} />,
-                        title:      'Target Laporan Belum Lengkap',
+                        bg: 'bg-amber-50 dark:bg-amber-950/50 border-amber-200 dark:border-amber-800',
+                        iconBg: 'bg-amber-500',
+                        icon: <AlertCircle size={18} />,
+                        title: 'Target Laporan Belum Lengkap',
                         titleColor: 'text-amber-800 dark:text-amber-200',
-                        descColor:  'text-amber-600 dark:text-amber-400',
-                        barColor:   'bg-amber-500',
+                        descColor: 'text-amber-600 dark:text-amber-400',
+                        barColor: 'bg-amber-500',
                       },
                       achieved: {
-                        bg:         'bg-emerald-50 dark:bg-emerald-950/50 border-emerald-200 dark:border-emerald-800',
-                        iconBg:     'bg-emerald-500',
-                        icon:       <Sparkles size={18} />,
-                        title:      'Target Laporan Mingguan Tercapai! 🎉',
+                        bg: 'bg-emerald-50 dark:bg-emerald-950/50 border-emerald-200 dark:border-emerald-800',
+                        iconBg: 'bg-emerald-500',
+                        icon: <Sparkles size={18} />,
+                        title: 'Target Laporan Mingguan Tercapai! 🎉',
                         titleColor: 'text-emerald-800 dark:text-emerald-200',
-                        descColor:  'text-emerald-600 dark:text-emerald-400',
-                        barColor:   'bg-emerald-500',
+                        descColor: 'text-emerald-600 dark:text-emerald-400',
+                        barColor: 'bg-emerald-500',
                       },
                       bonus: {
-                        bg:         'bg-indigo-50 dark:bg-indigo-950/50 border-indigo-200 dark:border-indigo-800',
-                        iconBg:     'bg-indigo-500',
-                        icon:       <Zap size={18} />,
-                        title:      'Target Terlampaui! Pencapaian Ekstra 🔥',
+                        bg: 'bg-indigo-50 dark:bg-indigo-950/50 border-indigo-200 dark:border-indigo-800',
+                        iconBg: 'bg-indigo-500',
+                        icon: <Zap size={18} />,
+                        title: 'Target Terlampaui! Pencapaian Ekstra 🔥',
                         titleColor: 'text-indigo-800 dark:text-indigo-200',
-                        descColor:  'text-indigo-600 dark:text-indigo-400',
-                        barColor:   'bg-indigo-500',
+                        descColor: 'text-indigo-600 dark:text-indigo-400',
+                        barColor: 'bg-indigo-500',
                       },
                     } as const;
                     const theme = bannerThemes[targetStatus];
@@ -546,7 +546,7 @@ export default function App() {
                                 style={{ scrollbarWidth: 'none' }}
                               >
                                 {datesInCurrentWeek.map((date, idx) => {
-                                  const d        = new Date(date);
+                                  const d = new Date(date);
                                   const isActive = date === selectedDate;
                                   return (
                                     <button
@@ -585,7 +585,7 @@ export default function App() {
                                     <button
                                       key={date}
                                       onClick={() => {
-                                        const idx    = datesInCurrentWeek.indexOf(date);
+                                        const idx = datesInCurrentWeek.indexOf(date);
                                         const curIdx = selectedDate ? datesInCurrentWeek.indexOf(selectedDate) : 0;
                                         setSlideDirection(idx > curIdx ? 'left' : 'right');
                                         setSelectedDate(date);
@@ -625,8 +625,8 @@ export default function App() {
                                     <div className="flex items-center gap-3">
                                       {item.tercapai
                                         ? <div className="w-5 h-5 rounded-full border-2 border-emerald-500 flex items-center justify-center shrink-0">
-                                            <div className="w-2 h-2 rounded-full bg-emerald-500" />
-                                          </div>
+                                          <div className="w-2 h-2 rounded-full bg-emerald-500" />
+                                        </div>
                                         : <div className="w-5 h-5 rounded-full border-2 border-dashed border-slate-300 dark:border-slate-600 shrink-0" />
                                       }
                                       <span className={cn('text-sm', item.tercapai ? 'text-slate-800 dark:text-slate-200' : 'text-slate-400 dark:text-slate-500')}>
@@ -861,40 +861,78 @@ export default function App() {
                   })()}
 
                   {/* ── Charts ── */}
-                  <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-                    className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    {(stats?.names.length ?? 0) > 0 && (
-                      <div className="bg-white dark:bg-slate-900 p-7 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm col-span-1 lg:col-span-2">
-                        <div className="mb-6">
-                          <h4 className="font-bold text-lg flex items-center gap-2 text-slate-800 dark:text-slate-100">
-                            <Activity size={18} className="text-indigo-500" /> Kinerja Kontributor Transmisi
-                          </h4>
-                          <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">Berdasarkan frekuensi laporan harian</p>
+                  <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
+
+                    {/* Leaderboard kontributor — tetap full width */}
+                    {(stats?.names.length ?? 0) > 0 && (() => {
+                      const sorted = [...stats!.names].sort((a, b) => b.count - a.count);
+                      const max = sorted[0]?.count ?? 1;
+                      const total = sorted.reduce((s, n) => s + n.count, 0);
+                      const avg = total / sorted.length;
+                      return (
+                        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
+                          <div className="px-7 pt-6 pb-5 border-b border-slate-100 dark:border-slate-800 flex items-start justify-between gap-4">
+                            <div>
+                              <h4 className="font-bold text-lg flex items-center gap-2 text-slate-800 dark:text-slate-100">
+                                <Activity size={18} className="text-indigo-500" /> Kinerja Kontributor Transmisi
+                              </h4>
+                              <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">Berdasarkan frekuensi laporan harian</p>
+                            </div>
+                            <div className="shrink-0 text-center bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2">
+                              <p className="text-xl font-black text-slate-800 dark:text-slate-100 leading-none">{sorted.length}</p>
+                              <p className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 mt-1 uppercase tracking-wider">anggota</p>
+                            </div>
+                          </div>
+                          <div className="grid grid-cols-3 divide-x divide-slate-100 dark:divide-slate-800 border-b border-slate-100 dark:border-slate-800">
+                            {[
+                              { label: 'Terbanyak', value: sorted[0]?.count ?? 0, sub: sorted[0]?.name ?? '-' },
+                              { label: 'Total laporan', value: total, sub: 'keseluruhan' },
+                              { label: 'Rata-rata', value: avg.toFixed(1), sub: 'per orang' },
+                            ].map((item, i) => (
+                              <div key={i} className="px-6 py-4">
+                                <p className="text-[10px] uppercase tracking-widest font-semibold text-slate-400 dark:text-slate-500 mb-1">{item.label}</p>
+                                <p className="text-3xl font-black text-slate-800 dark:text-slate-100 leading-none">{item.value}</p>
+                                <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">{item.sub}</p>
+                              </div>
+                            ))}
+                          </div>
+                          <div className="divide-y divide-slate-50 dark:divide-slate-800/60">
+                            {sorted.map((item, i) => {
+                              const pct = (item.count / max) * 100;
+                              return (
+                                <div key={item.name} className="flex items-center gap-4 px-7 py-3.5 hover:bg-slate-50/70 dark:hover:bg-slate-800/30 transition-colors">
+                                  <span className="text-sm font-mono text-slate-300 dark:text-slate-600 w-5 shrink-0 text-right">{i + 1}</span>
+                                  <span className="text-sm font-semibold text-slate-700 dark:text-slate-200 w-28 shrink-0">{item.name}</span>
+                                  <div className="flex-1 h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                                    <div
+                                      className="h-full rounded-full transition-all duration-700"
+                                      style={{
+                                        width: `${pct}%`,
+                                        background: i === 0
+                                          ? 'linear-gradient(90deg,#4f46e5,#6366f1)'
+                                          : i === 1
+                                            ? 'linear-gradient(90deg,#6366f1,#818cf8)'
+                                            : 'linear-gradient(90deg,#818cf8,#a5b4fc)',
+                                      }}
+                                    />
+                                  </div>
+                                  <span className="text-sm font-bold text-indigo-500 dark:text-indigo-400 w-6 text-right shrink-0">{item.count}</span>
+                                </div>
+                              );
+                            })}
+                          </div>
                         </div>
-                        <div className="h-[320px] w-full">
-                          <ResponsiveContainer width="100%" height="100%">
-                            <BarChart data={[...(stats!.names)].sort((a, b) => b.count - a.count)}>
-                              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
-                              <XAxis dataKey="name" fontSize={11} axisLine={false} tickLine={false} tick={{ fill: '#94a3b8' }} />
-                              <YAxis axisLine={false} tickLine={false} fontSize={11} tick={{ fill: '#94a3b8' }} />
-                              <Tooltip
-                                cursor={{ fill: '#f8fafc' }}
-                                contentStyle={{ borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 4px 24px rgba(0,0,0,0.08)', padding: '12px' }}
-                              />
-                              <Bar dataKey="count" fill="#6366F1" radius={[10, 10, 3, 3]} barSize={36}
-                                label={{ position: 'top', fill: '#6366F1', fontSize: 10, fontWeight: 'bold' }} />
-                            </BarChart>
-                          </ResponsiveContainer>
-                        </div>
-                      </div>
-                    )}
-                    {(stats?.shifts.length ?? 0) > 0 && (
-                      <div className="bg-white dark:bg-slate-900 p-7 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
-                        <h4 className="font-bold text-base flex items-center gap-2 text-slate-800 dark:text-slate-100 mb-6">
-                          <Clock size={18} className="text-indigo-500" /> Alokasi Waktu (Shift)
-                        </h4>
-                        <div className="h-[280px]">
-                          <ResponsiveContainer width="100%" height="100%">
+                      );
+                    })()}
+
+                    {/* Carousel pie charts */}
+                    {(() => {
+                      const slides = [
+                        (stats?.shifts.length ?? 0) > 0 && {
+                          key: 'shifts',
+                          label: 'Alokasi Waktu (Shift)',
+                          icon: <Clock size={16} className="text-indigo-500" />,
+                          chart: (
                             <PieChart>
                               <Pie data={stats!.shifts} cx="50%" cy="50%" innerRadius={65} outerRadius={95} paddingAngle={6} dataKey="count" stroke="none">
                                 {stats!.shifts.map((_, i) => <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />)}
@@ -902,23 +940,17 @@ export default function App() {
                               <Tooltip contentStyle={{ borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 4px 24px rgba(0,0,0,0.08)' }} />
                               <Legend verticalAlign="bottom" height={36} />
                             </PieChart>
-                          </ResponsiveContainer>
-                        </div>
-                      </div>
-                    )}
-                    {(stats?.types.length ?? 0) > 0 && (
-                      <div className="bg-white dark:bg-slate-900 p-7 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
-                        <h4 className="font-bold text-base flex items-center gap-2 text-slate-800 dark:text-slate-100 mb-6">
-                          <Filter size={18} className="text-indigo-500" /> Klasifikasi Aktivitas
-                        </h4>
-                        <div className="h-[280px]">
-                          <ResponsiveContainer width="100%" height="100%">
+                          ),
+                        },
+                        (stats?.types.length ?? 0) > 0 && {
+                          key: 'types',
+                          label: 'Klasifikasi Aktivitas',
+                          icon: <Filter size={16} className="text-indigo-500" />,
+                          chart: (
                             <PieChart>
                               <Pie
-                                data={stats!.types}
-                                cx="50%" cy="50%"
-                                innerRadius={0} outerRadius={80}
-                                dataKey="count"
+                                data={stats!.types} cx="50%" cy="50%"
+                                innerRadius={0} outerRadius={80} dataKey="count"
                                 label={(props) => `${props.name ?? ''} ${((props.percent ?? 0) * 100).toFixed(0)}%`}
                                 stroke="white" strokeWidth={2}
                               >
@@ -926,10 +958,77 @@ export default function App() {
                               </Pie>
                               <Tooltip contentStyle={{ borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 4px 24px rgba(0,0,0,0.08)' }} />
                             </PieChart>
-                          </ResponsiveContainer>
+                          ),
+                        },
+                      ].filter(Boolean) as { key: string; label: string; icon: React.ReactNode; chart: React.ReactNode }[];
+
+                      if (slides.length === 0) return null;
+                      const current = slides[pieChartIndex];
+
+                      return (
+                        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
+                          {/* Carousel header */}
+                          <div className="flex items-center justify-between px-7 pt-5 pb-4 border-b border-slate-100 dark:border-slate-800">
+                            <h4 className="font-bold text-base flex items-center gap-2 text-slate-800 dark:text-slate-100">
+                              {current.icon} {current.label}
+                            </h4>
+                            <div className="flex items-center gap-2">
+                              <button
+                                onClick={() => setPieChartIndex(i => (i - 1 + slides.length) % slides.length)}
+                                className="w-8 h-8 rounded-full border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 hover:bg-indigo-50 dark:hover:bg-indigo-950 hover:border-indigo-300 dark:hover:border-indigo-700 flex items-center justify-center transition-colors text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 text-sm font-bold"
+                              >
+                                ‹
+                              </button>
+                              <span className="text-[11px] font-mono text-slate-400 dark:text-slate-500 w-10 text-center">
+                                {pieChartIndex + 1} / {slides.length}
+                              </span>
+                              <button
+                                onClick={() => setPieChartIndex(i => (i + 1) % slides.length)}
+                                className="w-8 h-8 rounded-full border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 hover:bg-indigo-50 dark:hover:bg-indigo-950 hover:border-indigo-300 dark:hover:border-indigo-700 flex items-center justify-center transition-colors text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 text-sm font-bold"
+                              >
+                                ›
+                              </button>
+                            </div>
+                          </div>
+
+                          {/* Chart area dengan AnimatePresence */}
+                          <div className="p-7">
+                            <AnimatePresence mode="wait">
+                              <motion.div
+                                key={current.key}
+                                initial={{ opacity: 0, x: 30 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                exit={{ opacity: 0, x: -30 }}
+                                transition={{ duration: 0.22, ease: 'easeInOut' }}
+                                className="h-[280px]"
+                              >
+                                <ResponsiveContainer width="100%" height="100%">
+                                  {current.chart as React.ReactElement}
+                                </ResponsiveContainer>
+                              </motion.div>
+                            </AnimatePresence>
+
+                            {/* Dot indicators */}
+                            {slides.length > 1 && (
+                              <div className="flex justify-center gap-1.5 mt-4">
+                                {slides.map((_, i) => (
+                                  <button
+                                    key={i}
+                                    onClick={() => setPieChartIndex(i)}
+                                    className={cn(
+                                      'rounded-full transition-all duration-300',
+                                      i === pieChartIndex
+                                        ? 'w-5 h-2 bg-indigo-500'
+                                        : 'w-2 h-2 bg-slate-200 dark:bg-slate-700 hover:bg-slate-400 dark:hover:bg-slate-500'
+                                    )}
+                                  />
+                                ))}
+                              </div>
+                            )}
+                          </div>
                         </div>
-                      </div>
-                    )}
+                      );
+                    })()}
                   </motion.div>
                 </div>
               ) : (
@@ -1002,9 +1101,9 @@ export default function App() {
 
 // ─── Slide variants ───────────────────────────────────────────────────────────
 const slideVariants = {
-  enter:  (dir: 'left' | 'right') => ({ x: dir === 'left' ? 60 : -60, opacity: 0 }),
+  enter: (dir: 'left' | 'right') => ({ x: dir === 'left' ? 60 : -60, opacity: 0 }),
   center: { x: 0, opacity: 1 },
-  exit:   (dir: 'left' | 'right') => ({ x: dir === 'left' ? -60 : 60, opacity: 0 }),
+  exit: (dir: 'left' | 'right') => ({ x: dir === 'left' ? -60 : 60, opacity: 0 }),
 };
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
