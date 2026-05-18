@@ -16,6 +16,18 @@ import { generateDataSummary } from './services/geminiService';
 import { cn } from './lib/utils';
 import _ from 'lodash';
 
+// Helper untuk mendapatkan link thumbnail langsung dari Google Drive
+const getDriveThumbnailUrl = (url: string) => {
+  if (!url) return null;
+  // Mencari format ID dari link Google Drive
+  const match = url.match(/\/d\/([a-zA-Z0-9_-]+)/) || url.match(/id=([a-zA-Z0-9_-]+)/);
+  if (match && match[1]) {
+    // Menggunakan endpoint thumbnail bawaan Google Drive (sz=w800 untuk lebar 800px)
+    return `https://drive.google.com/thumbnail?id=${match[1]}&sz=w800`;
+  }
+  return url; // Kembalikan URL asli jika format tidak dikenali
+};
+
 const COLORS = ['#2563EB', '#3B82F6', '#60A5FA', '#93C5FD', '#1E40AF', '#1D4ED8', '#BFDBFE'];
 
 const DEFAULT_SHEET_URL = 'https://docs.google.com/spreadsheets/d/1wZC9uKJWJopluktxUJF5xOenieUIUNpAOQMKrGv9U4k/edit?gid=1597055105#gid=1597055105';
@@ -137,7 +149,24 @@ export default function App() {
       .map(r => rowValue(r, 'kendala'))
       .filter(v => v && v !== 'N/A' && v !== '-' && v !== '');
 
-    return { personnel, shifts, entries, notes, disturbances, obstacles };
+    const photos = _.uniq(
+      dayRows.flatMap(r => {
+        // Cari kolom yang mengandung kata kunci foto/dokumentasi
+        const photoKeys = Object.keys(r).filter(k =>
+          ['foto', 'dokumentasi', 'link', 'url', 'bukti', 'gambar'].some(keyword => k.toLowerCase().includes(keyword))
+        );
+
+        return photoKeys.flatMap(k => {
+          const val = r[k];
+          if (!val || val === '-' || val === 'N/A') return [];
+          // Jika ada multiple link yang dipisah dengan koma, kita split
+          return String(val).split(',').map(s => s.trim()).filter(Boolean);
+        });
+      })
+    );
+
+    // Pastikan mengembalikan 'photos' juga
+    return { personnel, shifts, entries, notes, disturbances, obstacles, photos };
   };
 
   const getAiSummary = async () => {
@@ -460,6 +489,49 @@ export default function App() {
                                 </div>
                               </div>
 
+                              {getDailySummary(selectedDate)?.photos && getDailySummary(selectedDate)!.photos.length > 0 && (
+                                <div className="lg:col-span-12 bg-white p-8 rounded-[2.5rem] border border-blue-50 shadow-xl shadow-blue-900/5 mt-2">
+                                  <div className="flex items-center justify-between mb-6 pb-4 border-b border-slate-50">
+                                    <div>
+                                      <p className="text-[10px] uppercase font-bold tracking-[0.2em] text-blue-600 mb-1">Preview Geotag</p>
+                                      <h5 className="text-xl font-black text-slate-800 tracking-tight">Galeri Dokumentasi Lapangan</h5>
+                                    </div>
+                                    <Camera size={24} className="text-blue-300" />
+                                  </div>
+
+                                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+                                    {getDailySummary(selectedDate)!.photos.map((url, i) => {
+                                      // Abaikan jika bukan URL valid
+                                      if (!url.startsWith('http')) return null;
+
+                                      const imgSrc = getDriveThumbnailUrl(url);
+                                      return (
+                                        <a
+                                          key={i}
+                                          href={url}
+                                          target="_blank"
+                                          rel="noopener noreferrer"
+                                          className="group relative block aspect-square rounded-2xl overflow-hidden bg-slate-100 border border-slate-200"
+                                        >
+                                          <img
+                                            src={imgSrc || url}
+                                            alt={`Dokumentasi ${i + 1}`}
+                                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                                            loading="lazy"
+                                          />
+                                          <div className="absolute inset-0 bg-blue-900/40 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center backdrop-blur-sm">
+                                            <ImageIcon className="text-white mb-2" size={28} />
+                                            <span className="text-white text-xs font-bold bg-blue-900/50 px-3 py-1 rounded-full">
+                                              Buka Foto Asli
+                                            </span>
+                                          </div>
+                                        </a>
+                                      );
+                                    })}
+                                  </div>
+                                </div>
+                              )}
+                              
                               {/* Disturbances */}
                               {(getDailySummary(selectedDate)?.disturbances.length || 0) > 0 ||
                                 (getDailySummary(selectedDate)?.obstacles.length || 0) > 0 ? (
