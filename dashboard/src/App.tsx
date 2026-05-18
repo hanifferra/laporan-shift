@@ -6,9 +6,8 @@ import {
 } from 'recharts';
 import {
   Search, Sparkles, FileSpreadsheet, RefreshCw,
-  AlertCircle, LayoutDashboard,
-  Users, Calendar, Clock, Activity, MessageSquare, Filter, Image as ImageIcon,
-  ChevronLeft, ChevronRight, Camera
+  AlertCircle, Activity, Users, Calendar, Clock,
+  MessageSquare, Filter, Image as ImageIcon, Camera
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { fetchSheetData, SheetData } from './services/sheetService';
@@ -16,21 +15,43 @@ import { generateDataSummary } from './services/geminiService';
 import { cn } from './lib/utils';
 import _ from 'lodash';
 
-// Helper untuk mendapatkan link thumbnail langsung dari Google Drive
-const getDriveThumbnailUrl = (url: string) => {
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+
+const getDriveThumbnailUrl = (url: string): string | null => {
   if (!url) return null;
-  // Mencari format ID dari link Google Drive
   const match = url.match(/\/d\/([a-zA-Z0-9_-]+)/) || url.match(/id=([a-zA-Z0-9_-]+)/);
-  if (match && match[1]) {
-    // Menggunakan endpoint thumbnail bawaan Google Drive (sz=w800 untuk lebar 800px)
-    return `https://drive.google.com/thumbnail?id=${match[1]}&sz=w800`;
+  if (match?.[1]) {
+    const directUrl = `https://drive.google.com/uc?export=view&id=${match[1]}`;
+    return `https://wsrv.nl/?url=${encodeURIComponent(directUrl)}&w=400&h=400&fit=cover`;
   }
-  return url; // Kembalikan URL asli jika format tidak dikenali
+  return url;
 };
+
+const PLACEHOLDER_IMG =
+  "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Crect fill='%23e2e8f0' width='200' height='200'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%2394a3b8' font-size='13' font-family='sans-serif'%3EGagal Dimuat%3C/text%3E%3C/svg%3E";
 
 const COLORS = ['#2563EB', '#3B82F6', '#60A5FA', '#93C5FD', '#1E40AF', '#1D4ED8', '#BFDBFE'];
 
-const DEFAULT_SHEET_URL = 'https://docs.google.com/spreadsheets/d/1wZC9uKJWJopluktxUJF5xOenieUIUNpAOQMKrGv9U4k/edit?gid=625931813#gid=625931813';
+const DEFAULT_SHEET_URL =
+  'https://docs.google.com/spreadsheets/d/1wZC9uKJWJopluktxUJF5xOenieUIUNpAOQMKrGv9U4k/edit?gid=1772938421#gid=1772938421';
+
+// ─── Types ────────────────────────────────────────────────────────────────────
+
+interface DailySummary {
+  personnel: string[];
+  shifts: string[];
+  entries: {
+    activityList: string[];
+    action: string;
+    time: string;
+  }[];
+  notes: string[];
+  disturbances: string[];
+  obstacles: string[];
+  photos: string[];
+}
+
+// ─── App ──────────────────────────────────────────────────────────────────────
 
 export default function App() {
   const [sheetUrl, setSheetUrl] = useState(DEFAULT_SHEET_URL);
@@ -42,15 +63,27 @@ export default function App() {
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTab, setActiveTab] = useState<'overview' | 'data'>('overview');
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
+  const [selectedWeek, setSelectedWeek] = useState<string | null>(null);
 
+  // ─── Helper: hitung label minggu (Selasa–Senin) ───────────────────────────
+  const getWeekKey = (dateStr: string): string => {
+    const date = new Date(dateStr);
+    const day = date.getDay(); // 0=Min,1=Sen,2=Sel,...
+    const selisih = day === 2 ? 0 : day > 2 ? day - 2 : day + 5;
+    const awal = new Date(date);
+    awal.setDate(date.getDate() - selisih);
+    const akhir = new Date(awal);
+    akhir.setDate(awal.getDate() + 6);
+    const fmt = (d: Date) =>
+      `${d.getDate()} ${d.toLocaleString('id-ID', { month: 'short' })}`;
+    return `Sel ${fmt(awal)} – Sen ${fmt(akhir)} ${akhir.getFullYear()}`;
+  };
+
+  // Auto-load & auto-refresh setiap 5 menit
   React.useEffect(() => {
-    if (DEFAULT_SHEET_URL) {
-      handleLoadData(DEFAULT_SHEET_URL);
-      const intervalId = setInterval(() => {
-        handleLoadData(DEFAULT_SHEET_URL);
-      }, 300000);
-      return () => clearInterval(intervalId);
-    }
+    handleLoadData(DEFAULT_SHEET_URL);
+    const id = setInterval(() => handleLoadData(DEFAULT_SHEET_URL), 300_000);
+    return () => clearInterval(id);
   }, []);
 
   const handleLoadData = async (url?: string) => {
@@ -62,10 +95,17 @@ export default function App() {
       const result = await fetchSheetData(targetUrl);
       setData(result);
       setAiSummary(null);
-      const dates = result.rows
-        .map(r => r[result.headers.find(h => h.toLowerCase().includes('tanggal')) || ''])
-        .filter(Boolean);
-      if (dates.length > 0) setSelectedDate(dates[dates.length - 1]);
+
+      const dateCol = result.headers.find(h => h.toLowerCase().includes('tanggal')) || '';
+      const dates = result.rows.map(r => r[dateCol]).filter(Boolean) as string[];
+
+      if (dates.length > 0) {
+        setSelectedDate(dates[dates.length - 1]);
+
+        // Auto-select minggu terbaru
+        const weeks = _.uniq(dates.map(getWeekKey));
+        if (weeks.length > 0) setSelectedWeek(weeks[weeks.length - 1]);
+      }
     } catch (err: any) {
       setError(err.message || 'Gagal memuat data');
     } finally {
@@ -73,99 +113,97 @@ export default function App() {
     }
   };
 
-  // Helper to find column by loosely matching name
-  const rowValue = (row: any, key: string) => {
-    const foundKey = Object.keys(row).find(k => k.toLowerCase().includes(key));
-    return foundKey ? row[foundKey] : null;
+  // Cari nilai kolom secara fuzzy berdasarkan kata kunci
+  const rowValue = (row: Record<string, any>, key: string) => {
+    const found = Object.keys(row).find(k => k.toLowerCase().includes(key));
+    return found ? row[found] : null;
   };
 
-  const getDailySummary = (date: string) => {
+  const getDailySummary = (date: string): DailySummary | null => {
     if (!data) return null;
-    const dayRows = data.rows.filter(
-      r => r[data.headers.find(h => h.toLowerCase().includes('tanggal')) || ''] === date
-    );
+
+    const dateCol = data.headers.find(h => h.toLowerCase().includes('tanggal')) || '';
+    const dayRows = data.rows.filter(r => r[dateCol] === date);
     if (dayRows.length === 0) return null;
 
     const personnel = _.uniq(
-      dayRows.map(r => String(rowValue(r, 'nama') || rowValue(r, 'teknisi') || ''))
-    ).filter(Boolean);
-
+      dayRows.map(r => String(rowValue(r, 'nama') || rowValue(r, 'teknisi') || '')).filter(Boolean)
+    );
     const shifts = _.uniq(
-      dayRows.map(r => String(rowValue(r, 'shift') || ''))
-    ).filter(Boolean).sort();
+      dayRows.map(r => String(rowValue(r, 'shift') || '')).filter(Boolean)
+    ).sort();
 
-    // Kumpulkan semua pekerjaan unik dari seluruh baris di hari ini
-    // Gabungkan semua item pekerjaan, buang yang "sama dengan..." dan kosong
     const allPekerjaan: string[] = [];
     dayRows.forEach(r => {
       const raw = String(rowValue(r, 'pekerjaan') || rowValue(r, 'aktivitas') || '');
       raw.split(',').forEach(item => {
-        // SESUDAH — buang suffix "| Sama dengan..." 
         const trimmed = item.trim().replace(/\s*\|.*$/i, '').trim();
         if (
-          trimmed !== '' &&
+          trimmed &&
           trimmed !== '-' &&
           !trimmed.toLowerCase().startsWith('sama dengan') &&
-          !trimmed.match(/\(Shift\s*\d\)/i)   // ← tambah ini
+          !trimmed.match(/\(Shift\s*\d\)/i)
         ) {
-          // Tambahkan hanya jika belum ada (case-insensitive)
-          const alreadyExists = allPekerjaan.some(
-            p => p.toLowerCase() === trimmed.toLowerCase()
-          );
-          if (!alreadyExists) allPekerjaan.push(trimmed);
+          const exists = allPekerjaan.some(p => p.toLowerCase() === trimmed.toLowerCase());
+          if (!exists) allPekerjaan.push(trimmed);
         }
       });
     });
 
-    // Buat satu entry tunggal berisi semua pekerjaan unik hari ini
-    const entries = allPekerjaan.length > 0
-      ? [{
-        activityList: allPekerjaan,
-        action: _.uniq(
-          dayRows
-            .map(r => rowValue(r, 'tindakan'))
-            .filter(v => v && v !== '-' && v !== '')
-        ).join('; ') || '-',
-        time: _.uniq(
-          dayRows
-            .map(r => rowValue(r, 'jam') || rowValue(r, 'mulai'))
-            .filter(Boolean)
-        ).join(', ') || '-',
-      }]
-      : [];
+    const entries =
+      allPekerjaan.length > 0
+        ? [
+          {
+            activityList: allPekerjaan,
+            action:
+              _.uniq(
+                dayRows
+                  .map(r => rowValue(r, 'tindakan'))
+                  .filter(v => v && v !== '-' && v !== '')
+              ).join('; ') || '-',
+            time:
+              _.uniq(
+                dayRows
+                  .map(r => rowValue(r, 'jam') || rowValue(r, 'mulai'))
+                  .filter(Boolean)
+              ).join(', ') || '-',
+          },
+        ]
+        : [];
 
     const notes = _.uniq(
       dayRows.flatMap(r => {
         const val = rowValue(r, 'catatan') || rowValue(r, 'keterangan');
         return val && val !== '-' ? [String(val)] : [];
       })
-    ).filter(Boolean);
+    );
 
     const disturbances = dayRows
       .map(r => rowValue(r, 'gangguan'))
-      .filter(v => v && v !== 'N/A' && v !== '-' && v !== '');
+      .filter((v): v is string => !!v && v !== 'N/A' && v !== '-' && v !== '');
 
     const obstacles = dayRows
       .map(r => rowValue(r, 'kendala'))
-      .filter(v => v && v !== 'N/A' && v !== '-' && v !== '');
+      .filter((v): v is string => !!v && v !== 'N/A' && v !== '-' && v !== '');
 
+    // Foto — kumpulkan semua URL dari kolom foto/dokumentasi/link/url/dst
+    const PHOTO_KEYWORDS = ['foto', 'dokumentasi', 'link', 'url', 'bukti', 'gambar'];
     const photos = _.uniq(
       dayRows.flatMap(r => {
-        // Cari kolom yang mengandung kata kunci foto/dokumentasi
         const photoKeys = Object.keys(r).filter(k =>
-          ['foto', 'dokumentasi', 'link', 'url', 'bukti', 'gambar'].some(keyword => k.toLowerCase().includes(keyword))
+          PHOTO_KEYWORDS.some(kw => k.toLowerCase().includes(kw))
         );
-
         return photoKeys.flatMap(k => {
           const val = r[k];
           if (!val || val === '-' || val === 'N/A') return [];
-          // Jika ada multiple link yang dipisah dengan koma, kita split
-          return String(val).split(',').map(s => s.trim()).filter(Boolean);
+          return String(val)
+            .split(',')
+            .map(s => s.trim())
+            .filter(s => s.startsWith('http'));
         });
       })
     );
 
-    // Pastikan mengembalikan 'photos' juga
     return { personnel, shifts, entries, notes, disturbances, obstacles, photos };
   };
 
@@ -174,8 +212,7 @@ export default function App() {
     setLoadingAi(true);
     try {
       const summary = await generateDataSummary(data.rows, data.headers);
-      const cleanedSummary = summary.replace(/[#*]/g, '');
-      setAiSummary(cleanedSummary);
+      setAiSummary((summary ?? '').replace(/[#*]/g, ''));
     } catch (err) {
       console.error(err);
     } finally {
@@ -183,97 +220,88 @@ export default function App() {
     }
   };
 
-  const displayHeaders = data?.headers.filter(header => {
-    const h = header.toLowerCase();
-    return !['timestamp', 'foto', 'dokumentasi', 'link', 'url', 'bukti', 'gambar', 'image'].some(
-      k => h.includes(k)
-    );
-  }) || [];
+  const HIDDEN_KEYWORDS = ['timestamp', 'foto', 'dokumentasi', 'link', 'url', 'bukti', 'gambar', 'image'];
+  const displayHeaders =
+    data?.headers.filter(h => !HIDDEN_KEYWORDS.some(kw => h.toLowerCase().includes(kw))) || [];
 
-  const filteredRows = data?.rows.filter(row =>
-    Object.values(row).some(val =>
-      String(val).toLowerCase().includes(searchTerm.toLowerCase())
-    )
-  ) || [];
+  const filteredRows =
+    data?.rows.filter(row =>
+      Object.values(row).some(val =>
+        String(val).toLowerCase().includes(searchTerm.toLowerCase())
+      )
+    ) || [];
 
   const getStats = () => {
     if (!data) return null;
 
-    const nameCol = data.headers.find(h =>
-      ['nama', 'person', 'petugas', 'teknisi'].some(k => h.toLowerCase().includes(k))
-    );
-    const shiftCol = data.headers.find(h =>
-      ['shift', 'waktu', 'periode'].some(k => h.toLowerCase().includes(k))
-    );
-    const activityCol = data.headers.find(h =>
-      ['pekerjaan', 'aktivitas', 'kegiatan'].some(k => h.toLowerCase().includes(k))
-    );
-    const typeCol = data.headers.find(h =>
-      ['jenis', 'tipe', 'status', 'kategori'].some(k => h.toLowerCase().includes(k))
-    );
-    const dateCol = data.headers.find(h =>
-      ['tanggal', 'date', 'hari'].some(k => h.toLowerCase().includes(k))
-    );
+    const col = (keys: string[]) =>
+      data.headers.find(h => keys.some(k => h.toLowerCase().includes(k)));
 
-    const nameStats = nameCol ? _.countBy(data.rows, nameCol) : null;
-    const shiftStats = shiftCol ? _.countBy(data.rows, shiftCol) : null;
-    const activityStats = activityCol ? _.countBy(data.rows, activityCol) : null;
-    const typeStats = typeCol ? _.countBy(data.rows, typeCol) : null;
+    const nameCol = col(['nama', 'person', 'petugas', 'teknisi']);
+    const shiftCol = col(['shift', 'waktu', 'periode']);
+    const typeCol = col(['jenis', 'tipe', 'status', 'kategori']);
+    const dateCol = col(['tanggal', 'date', 'hari']);
 
-    let timelineData: any[] = [];
+    const toEntries = (obj: Record<string, number> | null) =>
+      obj ? Object.entries(obj).map(([name, count]) => ({ name, count })) : [];
+
+    let timeline: { date: string; count: number }[] = [];
     if (dateCol) {
-      const groups = _.groupBy(data.rows, dateCol);
-      timelineData = Object.entries(groups)
+      timeline = Object.entries(_.groupBy(data.rows, dateCol))
         .map(([date, items]) => ({ date, count: items.length }))
         .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-    } else {
-      timelineData = data.rows.map((_, i) => ({ date: `Data ${i + 1}`, count: 1 }));
     }
 
     return {
       total: data.rows.length,
-      names: nameStats ? Object.entries(nameStats).map(([name, count]) => ({ name, count })) : [],
-      shifts: shiftStats ? Object.entries(shiftStats).map(([name, count]) => ({ name, count })) : [],
-      activities: activityStats ? Object.entries(activityStats).map(([name, count]) => ({ name, count })) : [],
-      types: typeStats ? Object.entries(typeStats).map(([name, count]) => ({ name, count })) : [],
-      timeline: timelineData,
+      names: toEntries(nameCol ? _.countBy(data.rows, nameCol) : null),
+      shifts: toEntries(shiftCol ? _.countBy(data.rows, shiftCol) : null),
+      types: toEntries(typeCol ? _.countBy(data.rows, typeCol) : null),
+      timeline,
     };
   };
 
   const stats = getStats();
 
+  // ─── Render ─────────────────────────────────────────────────────────────────
+
   return (
     <div className="min-h-screen bg-[#F0F2F5] text-[#141414] font-sans selection:bg-[#2563EB] selection:text-white">
-      {/* Header */}
+      {/* ── Header ── */}
       <header className="border-b border-blue-100 bg-white sticky top-0 z-30 px-6 py-4 shadow-sm">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex flex-col">
-            <h1 className="font-black text-2xl tracking-tighter text-blue-900 leading-none">TVRI Lampung</h1>
-            <p className="text-xs text-blue-600 font-bold mt-1 tracking-wide">Transmisi Simpang Pematang</p>
+            <h1 className="font-black text-2xl tracking-tighter text-blue-900 leading-none">
+              TVRI Lampung
+            </h1>
+            <p className="text-xs text-blue-600 font-bold mt-1 tracking-wide">
+              Transmisi Simpang Pematang
+            </p>
           </div>
           <div className="ml-auto flex items-center gap-3">
             <a
               href="https://hanifferra.github.io/laporan-shift/"
               target="_blank"
               rel="noopener noreferrer"
-              className="bg-white text-blue-700 border border-blue-200 px-8 py-3 rounded-2xl text-sm font-bold hover:bg-blue-50 transition-colors flex items-center gap-2 shadow-lg shadow-blue-500/10 active:scale-95 whitespace-nowrap h-fit"
+              className="bg-white text-blue-700 border border-blue-200 px-8 py-3 rounded-2xl text-sm font-bold hover:bg-blue-50 transition-colors flex items-center gap-2 shadow-lg shadow-blue-500/10 active:scale-95 whitespace-nowrap"
             >
               <FileSpreadsheet size={16} />
-              <span>Input Data</span>
+              Input Data
             </a>
             <button
               onClick={() => handleLoadData()}
               disabled={loading || !sheetUrl}
-              className="bg-[#1D4ED8] text-white px-8 py-3 rounded-2xl text-sm font-bold hover:bg-blue-800 disabled:opacity-50 disabled:bg-gray-400 transition-colors flex items-center gap-2 cursor-pointer shadow-lg shadow-blue-500/10 active:scale-95 whitespace-nowrap h-fit"
+              className="bg-[#1D4ED8] text-white px-8 py-3 rounded-2xl text-sm font-bold hover:bg-blue-800 disabled:opacity-50 disabled:bg-gray-400 transition-colors flex items-center gap-2 cursor-pointer shadow-lg shadow-blue-500/10 active:scale-95 whitespace-nowrap"
             >
-              {loading ? <RefreshCw className="animate-spin" size={16} /> : <RefreshCw size={16} />}
-              <span>{loading ? 'Sinkron...' : 'Update Data'}</span>
+              <RefreshCw size={16} className={loading ? 'animate-spin' : ''} />
+              {loading ? 'Sinkron...' : 'Update Data'}
             </button>
           </div>
         </div>
       </header>
 
       <main className="max-w-7xl mx-auto p-6 space-y-8">
+        {/* ── Error banner ── */}
         <AnimatePresence>
           {error && (
             <motion.div
@@ -288,6 +316,7 @@ export default function App() {
           )}
         </AnimatePresence>
 
+        {/* ── Loading / empty state ── */}
         {!data ? (
           <div className="min-h-[60vh] flex flex-col items-center justify-center text-center space-y-6">
             <div className="relative">
@@ -301,7 +330,7 @@ export default function App() {
               </div>
             </div>
             <div className="max-w-md">
-              <h2 className="text-2xl font-bold tracking-tight font-sans mb-2">
+              <h2 className="text-2xl font-bold tracking-tight mb-2">
                 {loading ? 'Memuat Data...' : 'Siap Terhubung'}
               </h2>
               <p className="text-slate-500">
@@ -315,53 +344,75 @@ export default function App() {
           </div>
         ) : (
           <div className="space-y-8">
-            {/* Quick Stats */}
+            {/* ── Quick Stats ── */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              <StatCard label="Total Laporan" value={stats?.total || 0} icon={<Activity size={20} />} color="bg-white" />
-              <StatCard label="Kontributor" value={stats?.names.length || 0} icon={<Users size={20} />} color="bg-white" />
-              <StatCard label="Variasi Shift" value={stats?.shifts.length || 0} icon={<Clock size={20} />} color="bg-white" />
-              <StatCard label="Entri Baru" value={filteredRows.length} icon={<Calendar size={20} />} color="bg-white" />
+              <StatCard label="Total Laporan" value={stats?.total || 0} icon={<Activity size={20} />} />
+              <StatCard label="Kontributor" value={stats?.names.length || 0} icon={<Users size={20} />} />
+              <StatCard label="Variasi Shift" value={stats?.shifts.length || 0} icon={<Clock size={20} />} />
+              <StatCard label="Entri Tersaring" value={filteredRows.length} icon={<Calendar size={20} />} />
             </div>
 
-            {/* AI Insights */}
+            {/* ── AI Insights ── */}
             <div className="bg-gradient-to-br from-blue-900 to-indigo-900 text-white p-6 rounded-3xl shadow-xl overflow-hidden relative group">
               <div className="absolute top-0 right-0 p-8 opacity-10 rotate-12 group-hover:rotate-0 transition-transform duration-500">
                 <Sparkles size={120} />
               </div>
               <div className="relative z-10 flex flex-col md:flex-row gap-6 items-start">
-                <div className="space-y-2 max-w-sm">
+                <div className="space-y-2 max-w-sm shrink-0">
                   <div className="flex items-center gap-2 text-blue-400">
                     <Sparkles size={20} />
-                    <span className="text-xs font-mono uppercase tracking-[0.2em] font-semibold">Gemini AI Engine</span>
+                    <span className="text-xs font-mono uppercase tracking-[0.2em] font-semibold">
+                      Gemini AI Engine
+                    </span>
                   </div>
-                  <h3 className="text-2xl font-bold font-serif italic text-blue-100">Analisis Laporan</h3>
-                  <p className="text-blue-200/60 text-sm">Gemini AI mengolah narasi laporan untuk menemukan poin-poin krusial dalam operasional harian.</p>
+                  <h3 className="text-2xl font-bold font-serif italic text-blue-100">
+                    Analisis Laporan
+                  </h3>
+                  <p className="text-blue-200/60 text-sm">
+                    Gemini AI mengolah narasi laporan untuk menemukan poin-poin krusial dalam
+                    operasional harian.
+                  </p>
                   <button
                     onClick={getAiSummary}
                     disabled={loadingAi}
                     className="mt-4 bg-white text-blue-900 px-8 py-3 rounded-2xl text-sm font-black flex items-center gap-2 hover:bg-blue-50 hover:scale-105 transition-all disabled:opacity-50 shadow-xl shadow-black/20"
                   >
-                    {loadingAi ? <RefreshCw className="animate-spin" size={18} /> : <Sparkles size={18} />}
-                    <span>{loadingAi ? 'Menganalisis...' : 'Refresh Analisis'}</span>
+                    <RefreshCw size={18} className={loadingAi ? 'animate-spin' : 'hidden'} />
+                    <Sparkles size={18} className={loadingAi ? 'hidden' : ''} />
+                    {loadingAi ? 'Menganalisis...' : 'Refresh Analisis'}
                   </button>
                 </div>
+
                 <div className="flex-grow w-full bg-black/20 border border-white/10 p-8 rounded-[2rem] min-h-[160px] backdrop-blur-md">
                   {loadingAi ? (
                     <div className="flex flex-col items-center justify-center min-h-[150px] space-y-4">
                       <div className="flex gap-2">
-                        <motion.div animate={{ y: [0, -8, 0] }} transition={{ repeat: Infinity, duration: 1 }} className="w-3 h-3 bg-blue-400 rounded-full" />
-                        <motion.div animate={{ y: [0, -8, 0] }} transition={{ repeat: Infinity, duration: 1, delay: 0.2 }} className="w-3 h-3 bg-blue-400 rounded-full" />
-                        <motion.div animate={{ y: [0, -8, 0] }} transition={{ repeat: Infinity, duration: 1, delay: 0.4 }} className="w-3 h-3 bg-blue-400 rounded-full" />
+                        {[0, 0.2, 0.4].map((delay, i) => (
+                          <motion.div
+                            key={i}
+                            animate={{ y: [0, -8, 0] }}
+                            transition={{ repeat: Infinity, duration: 1, delay }}
+                            className="w-3 h-3 bg-blue-400 rounded-full"
+                          />
+                        ))}
                       </div>
-                      <p className="text-xs font-mono text-blue-200/40 uppercase tracking-widest">Memproses Data Transmisi...</p>
+                      <p className="text-xs font-mono text-blue-200/40 uppercase tracking-widest">
+                        Memproses Data Transmisi...
+                      </p>
                     </div>
                   ) : aiSummary ? (
-                    <div className="markdown-body text-blue-50/90 text-[15px] leading-loose max-w-none">
+                    <div className="text-blue-50/90 text-[15px] leading-loose">
                       <ReactMarkdown
                         components={{
-                          p: ({ children }) => <p className="mb-8 last:mb-0 leading-relaxed">{children}</p>,
-                          ul: ({ children }) => <ul className="mb-8 space-y-4 list-disc pl-5">{children}</ul>,
-                          li: ({ children }) => <li className="text-blue-100/80">{children}</li>,
+                          p: ({ children }) => (
+                            <p className="mb-8 last:mb-0 leading-relaxed">{children}</p>
+                          ),
+                          ul: ({ children }) => (
+                            <ul className="mb-8 space-y-4 list-disc pl-5">{children}</ul>
+                          ),
+                          li: ({ children }) => (
+                            <li className="text-blue-100/80">{children}</li>
+                          ),
                         }}
                       >
                         {aiSummary}
@@ -377,133 +428,276 @@ export default function App() {
               </div>
             </div>
 
-            {/* Main Tabs */}
+            {/* ── Main Tabs ── */}
             <div className="space-y-6">
               <div className="flex gap-1 bg-slate-200 p-1 rounded-xl w-fit">
-                <TabButton active={activeTab === 'overview'} onClick={() => setActiveTab('overview')} label="Dashboard Visual" />
-                <TabButton active={activeTab === 'data'} onClick={() => setActiveTab('data')} label="Tabel Data" />
+                <TabButton
+                  active={activeTab === 'overview'}
+                  onClick={() => setActiveTab('overview')}
+                  label="Dashboard Visual"
+                />
+                <TabButton
+                  active={activeTab === 'data'}
+                  onClick={() => setActiveTab('data')}
+                  label="Tabel Data"
+                />
               </div>
 
+              {/* ══ Tab: Overview ══ */}
               {activeTab === 'overview' ? (
                 <div className="space-y-10">
                   {/* Daily Review */}
-                  {data && data.rows.length > 0 && (
+                  {data.rows.length > 0 && (
                     <section className="space-y-4">
                       <div className="flex items-center justify-between">
                         <h4 className="font-bold text-slate-800 flex items-center gap-2">
                           <Calendar size={20} className="text-blue-600" />
                           Logbook Harian
                         </h4>
-                        <p className="text-xs text-slate-400 font-mono">Klik tanggal untuk review detail</p>
+                        <p className="text-xs text-slate-400 font-mono">
+                          Pilih minggu lalu pilih tanggal
+                        </p>
                       </div>
 
-                      <div className="flex gap-2 overflow-x-auto pb-4 scrollbar-thin scrollbar-thumb-blue-100">
-                        {_.uniq(
-                          data.rows
-                            .map(r => r[data.headers.find(h => h.toLowerCase().includes('tanggal')) || ''])
-                            .filter(Boolean)
-                        )
-                          .sort()
-                          .reverse()
-                          .map(date => (
-                            <button
-                              key={date}
-                              onClick={() => setSelectedDate(date)}
-                              className={cn(
-                                'px-5 py-3 rounded-2xl shrink-0 transition-all font-bold text-sm',
-                                selectedDate === date
-                                  ? 'bg-blue-600 text-white shadow-lg shadow-blue-200 scale-105'
-                                  : 'bg-white text-slate-500 border border-slate-100 hover:bg-slate-50'
-                              )}
-                            >
-                              {date}
-                            </button>
-                          ))}
-                      </div>
+                      {/* ── Week + Date Selector ── */}
+                      {(() => {
+                        const dateCol = data.headers.find(h => h.toLowerCase().includes('tanggal')) || '';
+                        const allDates = _.uniq(
+                          data.rows.map(r => r[dateCol]).filter(Boolean)
+                        ).sort() as string[];
 
-                      <AnimatePresence mode="wait">
-                        {selectedDate && (
-                          <motion.div
-                            key={selectedDate}
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -10 }}
-                            className="grid grid-cols-1 lg:grid-cols-12 gap-6"
-                          >
-                            {/* Left: Activities */}
-                            <div className="lg:col-span-8 bg-white p-8 rounded-[2.5rem] border border-blue-50 shadow-xl shadow-blue-900/5">
-                              <div className="flex items-center justify-between mb-8 pb-4 border-b border-slate-50">
-                                <div>
-                                  <p className="text-[10px] uppercase font-bold tracking-[0.2em] text-blue-600 mb-1">Aktivitas Hari Ini</p>
-                                  <h5 className="text-2xl font-black text-slate-800 tracking-tight">{selectedDate}</h5>
-                                </div>
-                                <div className="flex items-center gap-2 text-[10px] font-mono text-slate-400 bg-slate-50 px-3 py-1.5 rounded-full">
-                                  <Clock size={12} className="text-blue-500" />
-                                  <span>{getDailySummary(selectedDate)?.shifts.join(', ') || 'N/A'}</span>
-                                </div>
-                              </div>
+                        const weekGroups = _.groupBy(allDates, getWeekKey);
 
-                              <div className="space-y-4">
-                                {getDailySummary(selectedDate)?.entries.map((entry, i) => (
-                                  <div key={i} className="group relative pl-8 pb-6 border-l-2 border-blue-50 last:pb-0">
-                                    <div className="absolute left-[-9px] top-0 w-4 h-4 rounded-full bg-white border-2 border-blue-400 group-hover:border-blue-600 transition-colors shadow-sm" />
-                                    <div className="space-y-2">
-                                      {/* Numbered list pekerjaan */}
-                                      <ol className="space-y-1 list-none">
-                                        {entry.activityList.map((item, idx) => (
-                                          <li key={idx} className="text-sm text-slate-800 font-bold leading-relaxed flex gap-2">
-                                            <span className="text-blue-400 font-mono text-xs mt-0.5 shrink-0 w-5">{idx + 1}.</span>
-                                            <span>{item}</span>
-                                          </li>
-                                        ))}
-                                      </ol>
-                                      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2">
-                                        <p className="text-xs text-slate-500 font-medium">
-                                          <span className="text-emerald-600 font-bold text-[10px] uppercase mr-2 tracking-tighter">Hasil:</span>
-                                          {entry.action}
-                                        </p>
-                                        <span className="text-[10px] text-slate-300 font-mono">[{entry.time}]</span>
-                                      </div>
-                                    </div>
-                                  </div>
-                                ))}
-                                {!getDailySummary(selectedDate)?.entries.length && (
-                                  <div className="py-12 text-center text-slate-300 italic text-sm">
-                                    Data pekerjaan tidak tersedia
-                                  </div>
-                                )}
-                              </div>
+                        // Urutkan minggu dari terbaru ke terlama
+                        const sortedWeeks = Object.keys(weekGroups).sort((a, b) => {
+                          const lastA = [...weekGroups[a]].sort().at(-1)!;
+                          const lastB = [...weekGroups[b]].sort().at(-1)!;
+                          return new Date(lastB).getTime() - new Date(lastA).getTime();
+                        });
+
+                        const datesInWeek = selectedWeek
+                          ? [...(weekGroups[selectedWeek] ?? [])].sort().reverse()
+                          : [];
+
+                        return (
+                          <div className="space-y-3">
+                            {/* Pemilih Minggu */}
+                            <div className="flex gap-2 flex-wrap">
+                              {sortedWeeks.map(week => (
+                                <button
+                                  key={week}
+                                  onClick={() => {
+                                    setSelectedWeek(week);
+                                    const dates = [...(weekGroups[week] ?? [])].sort();
+                                    setSelectedDate(dates.at(-1) ?? null);
+                                  }}
+                                  className={cn(
+                                    'px-4 py-2 rounded-2xl shrink-0 transition-all font-bold text-xs',
+                                    selectedWeek === week
+                                      ? 'bg-blue-600 text-white shadow-lg shadow-blue-200 scale-105'
+                                      : 'bg-white text-slate-500 border border-slate-100 hover:bg-slate-50'
+                                  )}
+                                >
+                                  📅 {week}
+                                </button>
+                              ))}
                             </div>
 
-                            {/* Right: Side Panel */}
-                            <div className="lg:col-span-4 space-y-6">
-                              {/* Personnel */}
-                              <div className="bg-slate-50 p-6 rounded-[2rem] border border-blue-50/50">
-                                <p className="text-[10px] uppercase font-bold tracking-widest text-slate-400 mb-4">Petugas Piket</p>
-                                <div className="flex flex-wrap gap-2">
-                                  {getDailySummary(selectedDate)?.personnel.map((p, i) => (
-                                    <span key={i} className="px-3 py-1 bg-white text-blue-700/80 rounded-xl text-[10px] font-black border border-blue-100 shadow-sm">
-                                      {p}
-                                    </span>
-                                  ))}
+                            {/* Pemilih Tanggal dalam minggu terpilih */}
+                            {selectedWeek && datesInWeek.length > 0 && (
+                              <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-blue-100">
+                                {datesInWeek.map(date => (
+                                  <button
+                                    key={date}
+                                    onClick={() => setSelectedDate(date)}
+                                    className={cn(
+                                      'px-5 py-3 rounded-2xl shrink-0 transition-all font-bold text-sm',
+                                      selectedDate === date
+                                        ? 'bg-blue-600 text-white shadow-lg shadow-blue-200 scale-105'
+                                        : 'bg-white text-slate-500 border border-slate-100 hover:bg-slate-50'
+                                    )}
+                                  >
+                                    {date}
+                                  </button>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })()}
+
+                      {/* Daily detail */}
+                      <AnimatePresence mode="wait">
+                        {selectedDate && (() => {
+                          const summary = getDailySummary(selectedDate);
+                          if (!summary) return null;
+                          return (
+                            <motion.div
+                              key={selectedDate}
+                              initial={{ opacity: 0, y: 10 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              exit={{ opacity: 0, y: -10 }}
+                              className="space-y-6"
+                            >
+                              {/* Row 1: Activities (8 col) + Side panel (4 col) */}
+                              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                                {/* ── Activities ── */}
+                                <div className="lg:col-span-8 bg-white p-8 rounded-[2.5rem] border border-blue-50 shadow-xl shadow-blue-900/5">
+                                  <div className="flex items-center justify-between mb-8 pb-4 border-b border-slate-50">
+                                    <div>
+                                      <p className="text-[10px] uppercase font-bold tracking-[0.2em] text-blue-600 mb-1">
+                                        Aktivitas Hari Ini
+                                      </p>
+                                      <h5 className="text-2xl font-black text-slate-800 tracking-tight">
+                                        {selectedDate}
+                                      </h5>
+                                    </div>
+                                    <div className="flex items-center gap-2 text-[10px] font-mono text-slate-400 bg-slate-50 px-3 py-1.5 rounded-full">
+                                      <Clock size={12} className="text-blue-500" />
+                                      {summary.shifts.join(', ') || 'N/A'}
+                                    </div>
+                                  </div>
+
+                                  <div className="space-y-4">
+                                    {summary.entries.length > 0 ? (
+                                      summary.entries.map((entry, i) => (
+                                        <div
+                                          key={i}
+                                          className="group relative pl-8 pb-6 border-l-2 border-blue-50 last:pb-0"
+                                        >
+                                          <div className="absolute left-[-9px] top-0 w-4 h-4 rounded-full bg-white border-2 border-blue-400 group-hover:border-blue-600 transition-colors shadow-sm" />
+                                          <ol className="space-y-1 list-none">
+                                            {entry.activityList.map((item, idx) => (
+                                              <li
+                                                key={idx}
+                                                className="text-sm text-slate-800 font-bold leading-relaxed flex gap-2"
+                                              >
+                                                <span className="text-blue-400 font-mono text-xs mt-0.5 shrink-0 w-5">
+                                                  {idx + 1}.
+                                                </span>
+                                                {item}
+                                              </li>
+                                            ))}
+                                          </ol>
+                                          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2">
+                                            <p className="text-xs text-slate-500 font-medium">
+                                              <span className="text-emerald-600 font-bold text-[10px] uppercase mr-2 tracking-tighter">
+                                                Hasil:
+                                              </span>
+                                              {entry.action}
+                                            </p>
+                                            <span className="text-[10px] text-slate-300 font-mono">
+                                              [{entry.time}]
+                                            </span>
+                                          </div>
+                                        </div>
+                                      ))
+                                    ) : (
+                                      <div className="py-12 text-center text-slate-300 italic text-sm">
+                                        Data pekerjaan tidak tersedia
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+
+                                {/* ── Side Panel ── */}
+                                <div className="lg:col-span-4 space-y-6">
+                                  {/* Petugas */}
+                                  <div className="bg-slate-50 p-6 rounded-[2rem] border border-blue-50/50">
+                                    <p className="text-[10px] uppercase font-bold tracking-widest text-slate-400 mb-4">
+                                      Petugas Piket
+                                    </p>
+                                    <div className="flex flex-wrap gap-2">
+                                      {summary.personnel.map((p, i) => (
+                                        <span
+                                          key={i}
+                                          className="px-3 py-1 bg-white text-blue-700/80 rounded-xl text-[10px] font-black border border-blue-100 shadow-sm"
+                                        >
+                                          {p}
+                                        </span>
+                                      ))}
+                                    </div>
+                                  </div>
+
+                                  {/* Status / Kendala */}
+                                  {summary.disturbances.length > 0 || summary.obstacles.length > 0 ? (
+                                    <div className="bg-red-50/50 p-6 rounded-[2rem] border border-red-100/50">
+                                      <p className="text-[10px] uppercase font-bold tracking-widest text-red-500 mb-4 flex items-center gap-2">
+                                        <AlertCircle size={14} /> Status & Kendala
+                                      </p>
+                                      <div className="space-y-3">
+                                        {summary.disturbances.map((d, i) => (
+                                          <div
+                                            key={i}
+                                            className="bg-white/80 p-3 rounded-2xl border border-red-100"
+                                          >
+                                            <p className="text-[10px] font-bold text-red-600 uppercase mb-1">
+                                              Gangguan
+                                            </p>
+                                            <p className="text-xs text-slate-700 font-medium">{d}</p>
+                                          </div>
+                                        ))}
+                                        {summary.obstacles.map((o, i) => (
+                                          <div
+                                            key={i}
+                                            className="bg-white/80 p-3 rounded-2xl border border-orange-100"
+                                          >
+                                            <p className="text-[10px] font-bold text-orange-600 uppercase mb-1">
+                                              Kendala Lapangan
+                                            </p>
+                                            <p className="text-xs text-slate-700 font-medium">{o}</p>
+                                          </div>
+                                        ))}
+                                      </div>
+                                    </div>
+                                  ) : (
+                                    <div className="p-4 bg-emerald-50 text-emerald-600 rounded-2xl text-[10px] font-bold uppercase tracking-widest text-center border border-emerald-100 flex items-center justify-center gap-2">
+                                      <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
+                                      Kondisi Normal
+                                    </div>
+                                  )}
+
+                                  {/* Catatan */}
+                                  {summary.notes.length > 0 && (
+                                    <div className="bg-amber-50/30 p-6 rounded-[2rem] border border-amber-100/50">
+                                      <p className="text-[10px] uppercase font-bold tracking-widest text-amber-600 mb-4 flex items-center gap-2">
+                                        <MessageSquare size={14} /> Catatan Khusus
+                                      </p>
+                                      <ul className="space-y-3">
+                                        {summary.notes.map((note, i) => (
+                                          <li
+                                            key={i}
+                                            className="text-xs text-slate-600 italic leading-relaxed bg-white/60 p-4 rounded-3xl border border-amber-50"
+                                          >
+                                            {note}
+                                          </li>
+                                        ))}
+                                      </ul>
+                                    </div>
+                                  )}
                                 </div>
                               </div>
 
-                              {getDailySummary(selectedDate)?.photos && getDailySummary(selectedDate)!.photos.length > 0 && (
-                                <div className="lg:col-span-12 bg-white p-8 rounded-[2.5rem] border border-blue-50 shadow-xl shadow-blue-900/5 mt-2">
+                              {/* ── Row 2: Foto Galeri (full width, di LUAR grid atas) ── */}
+                              {summary.photos.length > 0 && (
+                                <div className="bg-white p-8 rounded-[2.5rem] border border-blue-50 shadow-xl shadow-blue-900/5">
                                   <div className="flex items-center justify-between mb-6 pb-4 border-b border-slate-50">
                                     <div>
-                                      <p className="text-[10px] uppercase font-bold tracking-[0.2em] text-blue-600 mb-1">Preview Geotag</p>
-                                      <h5 className="text-xl font-black text-slate-800 tracking-tight">Galeri Dokumentasi Lapangan</h5>
+                                      <p className="text-[10px] uppercase font-bold tracking-[0.2em] text-blue-600 mb-1">
+                                        Preview Geotag
+                                      </p>
+                                      <h5 className="text-xl font-black text-slate-800 tracking-tight">
+                                        Galeri Dokumentasi Lapangan
+                                      </h5>
                                     </div>
-                                    <Camera size={24} className="text-blue-300" />
+                                    <div className="flex items-center gap-2 text-xs font-mono text-slate-400">
+                                      <Camera size={20} className="text-blue-300" />
+                                      <span>{summary.photos.length} foto</span>
+                                    </div>
                                   </div>
 
                                   <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
-                                    {getDailySummary(selectedDate)!.photos.map((url, i) => {
-                                      // Abaikan jika bukan URL valid
-                                      if (!url.startsWith('http')) return null;
-
+                                    {summary.photos.map((url, i) => {
                                       const imgSrc = getDriveThumbnailUrl(url);
                                       return (
                                         <a
@@ -511,13 +705,16 @@ export default function App() {
                                           href={url}
                                           target="_blank"
                                           rel="noopener noreferrer"
-                                          className="group relative block aspect-square rounded-2xl overflow-hidden bg-slate-100 border border-slate-200"
+                                          className="group relative block aspect-square rounded-2xl overflow-hidden bg-slate-100 border border-slate-200 shadow-sm hover:shadow-lg transition-shadow"
                                         >
                                           <img
                                             src={imgSrc || url}
                                             alt={`Dokumentasi ${i + 1}`}
                                             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                                             loading="lazy"
+                                            onError={e => {
+                                              (e.currentTarget as HTMLImageElement).src = PLACEHOLDER_IMG;
+                                            }}
                                           />
                                           <div className="absolute inset-0 bg-blue-900/40 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center backdrop-blur-sm">
                                             <ImageIcon className="text-white mb-2" size={28} />
@@ -531,104 +728,87 @@ export default function App() {
                                   </div>
                                 </div>
                               )}
-                              
-                              {/* Disturbances */}
-                              {(getDailySummary(selectedDate)?.disturbances.length || 0) > 0 ||
-                                (getDailySummary(selectedDate)?.obstacles.length || 0) > 0 ? (
-                                <div className="bg-red-50/50 p-6 rounded-[2rem] border border-red-100/50">
-                                  <p className="text-[10px] uppercase font-bold tracking-widest text-red-500 mb-4 flex items-center gap-2">
-                                    <AlertCircle size={14} /> Status & Kendala
-                                  </p>
-                                  <div className="space-y-3">
-                                    {getDailySummary(selectedDate)?.disturbances.map((d, i) => (
-                                      <div key={i} className="bg-white/80 p-3 rounded-2xl border border-red-100">
-                                        <p className="text-[10px] font-bold text-red-600 uppercase mb-1">Gangguan</p>
-                                        <p className="text-xs text-slate-700 font-medium">{d}</p>
-                                      </div>
-                                    ))}
-                                    {getDailySummary(selectedDate)?.obstacles.map((o, i) => (
-                                      <div key={i} className="bg-white/80 p-3 rounded-2xl border border-orange-100">
-                                        <p className="text-[10px] font-bold text-orange-600 uppercase mb-1">Kendala Lapangan</p>
-                                        <p className="text-xs text-slate-700 font-medium">{o}</p>
-                                      </div>
-                                    ))}
-                                  </div>
-                                </div>
-                              ) : (
-                                <div className="p-4 bg-emerald-50 text-emerald-600 rounded-2xl text-[10px] font-bold uppercase tracking-widest text-center border border-emerald-100 flex items-center justify-center gap-2">
-                                  <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
-                                  Kondisi Normal
-                                </div>
-                              )}
-
-                              {/* Notes */}
-                              {getDailySummary(selectedDate)?.notes.length ? (
-                                <div className="bg-amber-50/30 p-6 rounded-[2rem] border border-amber-100/50">
-                                  <p className="text-[10px] uppercase font-bold tracking-widest text-amber-600 mb-4 flex items-center gap-2">
-                                    <MessageSquare size={14} /> Catatan Khusus
-                                  </p>
-                                  <ul className="space-y-3">
-                                    {getDailySummary(selectedDate)?.notes.map((note, i) => (
-                                      <li key={i} className="text-xs text-slate-600 italic leading-relaxed bg-white/60 p-4 rounded-3xl border border-amber-50">
-                                        {note}
-                                      </li>
-                                    ))}
-                                  </ul>
-                                </div>
-                              ) : null}
-                            </div>
-                          </motion.div>
-                        )}
+                            </motion.div>
+                          );
+                        })()}
                       </AnimatePresence>
                     </section>
                   )}
 
+                  {/* ── Charts ── */}
                   <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     className="grid grid-cols-1 lg:grid-cols-2 gap-6"
                   >
-                    {/* Chart 1: Kontributor */}
-                    {stats?.names.length ? (
+                    {/* Chart: Kontributor */}
+                    {(stats?.names.length ?? 0) > 0 && (
                       <div className="bg-white p-8 rounded-[2.5rem] border border-blue-50 shadow-sm col-span-1 lg:col-span-2">
-                        <div className="flex items-center justify-between mb-8">
-                          <div>
-                            <h4 className="font-bold text-xl flex items-center gap-2 text-slate-800 tracking-tight">
-                              <Activity size={20} className="text-blue-600" />
-                              Kinerja Kontributor Transmisi
-                            </h4>
-                            <p className="text-xs text-slate-400 mt-1 font-medium">Berdasarkan frekuensi laporan harian di sistem</p>
-                          </div>
+                        <div className="mb-8">
+                          <h4 className="font-bold text-xl flex items-center gap-2 text-slate-800 tracking-tight">
+                            <Activity size={20} className="text-blue-600" />
+                            Kinerja Kontributor Transmisi
+                          </h4>
+                          <p className="text-xs text-slate-400 mt-1 font-medium">
+                            Berdasarkan frekuensi laporan harian di sistem
+                          </p>
                         </div>
                         <div className="h-[350px] w-full">
                           <ResponsiveContainer width="100%" height="100%">
-                            <BarChart data={stats.names.sort((a, b) => b.count - a.count)}>
+                            <BarChart data={[...(stats!.names)].sort((a, b) => b.count - a.count)}>
                               <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                              <XAxis dataKey="name" fontSize={11} axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontWeight: '500' }} />
+                              <XAxis
+                                dataKey="name"
+                                fontSize={11}
+                                axisLine={false}
+                                tickLine={false}
+                                tick={{ fill: '#64748b', fontWeight: '500' }}
+                              />
                               <YAxis axisLine={false} tickLine={false} fontSize={11} tick={{ fill: '#94a3b8' }} />
-                              <Tooltip cursor={{ fill: '#f8fafc' }} contentStyle={{ borderRadius: '20px', border: 'none', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.1)', padding: '16px' }} />
-                              <Bar dataKey="count" fill="#1D4ED8" radius={[14, 14, 4, 4]} barSize={40} label={{ position: 'top', fill: '#1e3a8a', fontSize: 10, fontWeight: 'bold' }} />
+                              <Tooltip
+                                cursor={{ fill: '#f8fafc' }}
+                                contentStyle={{
+                                  borderRadius: '20px',
+                                  border: 'none',
+                                  boxShadow: '0 25px 50px -12px rgba(0,0,0,0.1)',
+                                  padding: '16px',
+                                }}
+                              />
+                              <Bar
+                                dataKey="count"
+                                fill="#1D4ED8"
+                                radius={[14, 14, 4, 4]}
+                                barSize={40}
+                                label={{ position: 'top', fill: '#1e3a8a', fontSize: 10, fontWeight: 'bold' }}
+                              />
                             </BarChart>
                           </ResponsiveContainer>
                         </div>
                       </div>
-                    ) : null}
+                    )}
 
-                    {/* Chart 2: Shift */}
-                    {stats?.shifts.length ? (
+                    {/* Chart: Shift */}
+                    {(stats?.shifts.length ?? 0) > 0 && (
                       <div className="bg-white p-8 rounded-[2.5rem] border border-blue-50 shadow-sm">
-                        <div className="flex items-center justify-between mb-8">
-                          <h4 className="font-bold text-lg flex items-center gap-2 text-slate-800">
-                            <Clock size={20} className="text-blue-600" />
-                            Alokasi Waktu (Shift)
-                          </h4>
-                        </div>
+                        <h4 className="font-bold text-lg flex items-center gap-2 text-slate-800 mb-8">
+                          <Clock size={20} className="text-blue-600" />
+                          Alokasi Waktu (Shift)
+                        </h4>
                         <div className="h-[300px]">
                           <ResponsiveContainer width="100%" height="100%">
                             <PieChart>
-                              <Pie data={stats.shifts} cx="50%" cy="50%" innerRadius={70} outerRadius={100} paddingAngle={8} dataKey="count" stroke="none">
-                                {stats.shifts.map((_, index) => (
-                                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                              <Pie
+                                data={stats!.shifts}
+                                cx="50%"
+                                cy="50%"
+                                innerRadius={70}
+                                outerRadius={100}
+                                paddingAngle={8}
+                                dataKey="count"
+                                stroke="none"
+                              >
+                                {stats!.shifts.map((_, i) => (
+                                  <Cell key={i} fill={COLORS[i % COLORS.length]} />
                                 ))}
                               </Pie>
                               <Tooltip contentStyle={{ borderRadius: '20px', border: 'none', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.1)' }} />
@@ -637,30 +817,35 @@ export default function App() {
                           </ResponsiveContainer>
                         </div>
                       </div>
-                    ) : null}
+                    )}
 
-                    {/* Chart 3: Types */}
-                    {stats?.types.length ? (
+                    {/* Chart: Klasifikasi */}
+                    {(stats?.types.length ?? 0) > 0 && (
                       <div className="bg-white p-8 rounded-[2.5rem] border border-blue-50 shadow-sm">
-                        <div className="flex items-center justify-between mb-8">
-                          <h4 className="font-bold text-lg flex items-center gap-2 text-slate-800">
-                            <Filter size={20} className="text-blue-600" />
-                            Klasifikasi Aktivitas
-                          </h4>
-                        </div>
+                        <h4 className="font-bold text-lg flex items-center gap-2 text-slate-800 mb-8">
+                          <Filter size={20} className="text-blue-600" />
+                          Klasifikasi Aktivitas
+                        </h4>
                         <div className="h-[300px]">
                           <ResponsiveContainer width="100%" height="100%">
                             <PieChart>
                               <Pie
-                                data={stats.types}
-                                cx="50%" cy="50%"
-                                innerRadius={0} outerRadius={85}
+                                data={stats!.types}
+                                cx="50%"
+                                cy="50%"
+                                innerRadius={0}
+                                outerRadius={85}
                                 dataKey="count"
-                                label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                                stroke="white" strokeWidth={2}
+                                label={(props) => {
+                                  const name = props.name ?? '';
+                                  const percent = props.percent ?? 0;
+                                  return `${name} ${(percent * 100).toFixed(0)}%`;
+                                }}
+                                stroke="white"
+                                strokeWidth={2}
                               >
-                                {stats.types.map((_, index) => (
-                                  <Cell key={`cell-${index}`} fill={COLORS[(index + 2) % COLORS.length]} />
+                                {stats!.types.map((_, i) => (
+                                  <Cell key={i} fill={COLORS[(i + 2) % COLORS.length]} />
                                 ))}
                               </Pie>
                               <Tooltip contentStyle={{ borderRadius: '20px', border: 'none', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.1)' }} />
@@ -668,10 +853,11 @@ export default function App() {
                           </ResponsiveContainer>
                         </div>
                       </div>
-                    ) : null}
+                    )}
                   </motion.div>
                 </div>
               ) : (
+                /* ══ Tab: Data Table ══ */
                 <div className="bg-white rounded-3xl border border-blue-50 shadow-xl overflow-hidden">
                   <div className="p-4 border-b border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div className="relative flex-grow max-w-md">
@@ -685,15 +871,19 @@ export default function App() {
                       />
                     </div>
                     <div className="text-xs font-mono text-slate-400">
-                      Menampilkan {filteredRows.length} baris data (Penyaringan Aktif)
+                      Menampilkan {filteredRows.length} baris data
                     </div>
                   </div>
+
                   <div className="overflow-x-auto max-h-[600px] scrollbar-thin scrollbar-thumb-blue-100">
                     <table className="w-full text-left border-collapse min-w-[800px]">
-                      <thead className="bg-[#1D4ED8] text-white">
+                      <thead>
                         <tr>
-                          {displayHeaders.map((header, idx) => (
-                            <th key={idx} className="p-4 text-xs font-mono uppercase tracking-wider sticky top-0 bg-[#1D4ED8] z-20">
+                          {displayHeaders.map((header, i) => (
+                            <th
+                              key={i}
+                              className="p-4 text-xs font-mono uppercase tracking-wider sticky top-0 bg-[#1D4ED8] text-white z-20"
+                            >
                               {header}
                             </th>
                           ))}
@@ -704,7 +894,7 @@ export default function App() {
                           <tr key={idx} className="hover:bg-blue-50 transition-colors group">
                             {displayHeaders.map((header, hIdx) => (
                               <td key={hIdx} className="p-4 text-xs text-slate-700">
-                                <div className="max-w-[300px] truncate group-hover:whitespace-normal group-hover:overflow-visible group-hover:relative z-10 transition-all">
+                                <div className="max-w-[300px] truncate group-hover:whitespace-normal group-hover:overflow-visible transition-all">
                                   {String(row[header] || '-')}
                                 </div>
                               </td>
@@ -714,8 +904,11 @@ export default function App() {
                       </tbody>
                     </table>
                   </div>
+
                   {filteredRows.length === 0 && (
-                    <div className="p-12 text-center text-slate-400 italic">Tidak ada data yang ditemukan.</div>
+                    <div className="p-12 text-center text-slate-400 italic">
+                      Tidak ada data yang ditemukan.
+                    </div>
                   )}
                 </div>
               )}
@@ -728,36 +921,56 @@ export default function App() {
         <p className="text-sm font-bold tracking-tight text-blue-900 underline decoration-blue-200 decoration-4 underline-offset-4 font-serif italic">
           TVRI Transmisi Simpang Pematang
         </p>
-        <p className="text-xs text-slate-400 font-mono uppercase tracking-widest">Digital Logbook & Analysis System • 2026</p>
+        <p className="text-xs text-slate-400 font-mono uppercase tracking-widest">
+          Digital Logbook & Analysis System • 2026
+        </p>
       </footer>
     </div>
   );
 }
 
-function StatCard({ label, value, icon, color }: { label: string; value: string | number; icon: React.ReactNode; color: string }) {
+// ─── Sub-components ───────────────────────────────────────────────────────────
+
+function StatCard({
+  label,
+  value,
+  icon,
+}: {
+  label: string;
+  value: string | number;
+  icon: React.ReactNode;
+}) {
   return (
     <motion.div
       whileHover={{ y: -5, borderColor: '#BFDBFE' }}
-      className={cn('p-6 rounded-3xl border border-blue-50 shadow-sm relative overflow-hidden transition-all', color)}
+      className="p-6 rounded-3xl border border-blue-50 shadow-sm bg-white relative overflow-hidden transition-all"
     >
       <div className="flex items-center justify-between mb-4">
         <div className="p-2 bg-blue-50 rounded-lg text-blue-600">{icon}</div>
       </div>
-      <div>
-        <p className="text-xs font-mono uppercase tracking-[0.1em] text-slate-400 mb-1">{label}</p>
-        <p className="text-3xl font-bold font-sans leading-none tracking-tighter text-blue-950">{value}</p>
-      </div>
+      <p className="text-xs font-mono uppercase tracking-[0.1em] text-slate-400 mb-1">{label}</p>
+      <p className="text-3xl font-bold leading-none tracking-tighter text-blue-950">{value}</p>
     </motion.div>
   );
 }
 
-function TabButton({ active, onClick, label }: { active: boolean; onClick: () => void; label: string }) {
+function TabButton({
+  active,
+  onClick,
+  label,
+}: {
+  active: boolean;
+  onClick: () => void;
+  label: string;
+}) {
   return (
     <button
       onClick={onClick}
       className={cn(
         'px-6 py-2 rounded-lg text-sm font-medium transition-all duration-300',
-        active ? 'bg-white text-blue-700 shadow-md ring-1 ring-black/5' : 'text-slate-500 hover:text-blue-600 hover:bg-white/50'
+        active
+          ? 'bg-white text-blue-700 shadow-md ring-1 ring-black/5'
+          : 'text-slate-500 hover:text-blue-600 hover:bg-white/50'
       )}
     >
       {label}
